@@ -887,36 +887,7 @@
             <div class="card-title">Upcoming event</div>
             <span class="card-link" onclick="showPage('schedule')">View schedule</span>
           </div>
-          <div class="session-row">
-            <div class="session-left">
-              <div class="session-date-box"><span class="d">18</span><span class="m">Aug</span></div>
-              <div>
-                <div class="session-title-txt">Practice &middot; 7v7</div>
-                <div class="session-meta">Tue &middot; 8:00 &ndash; 10:00 PM</div>
-              </div>
-            </div>
-            <span class="status-pill pill-confirmed">Confirmed</span>
-          </div>
-          <div class="session-row">
-            <div class="session-left">
-              <div class="session-date-box"><span class="d">20</span><span class="m">Aug</span></div>
-              <div>
-                <div class="session-title-txt">Practice &middot; Regular</div>
-                <div class="session-meta">Thu &middot; 8:00 &ndash; 10:00 PM</div>
-              </div>
-            </div>
-            <span class="status-pill pill-cancelled">Cancelled</span>
-          </div>
-          <div class="session-row">
-            <div class="session-left">
-              <div class="session-date-box"><span class="d">23</span><span class="m">Aug</span></div>
-              <div>
-                <div class="session-title-txt">Match vs Titans FC</div>
-                <div class="session-meta">Sun &middot; 5:00 PM</div>
-              </div>
-            </div>
-            <span class="status-pill pill-confirmed">Confirmed</span>
-          </div>
+          <div id="dashboard-upcoming-events"><div style="font-size:12.5px;color:var(--muted);padding:8px 0;">Loading&hellip;</div></div>
         </div>
 
         <div class="card">
@@ -1597,20 +1568,25 @@
 
     <div class="card" style="margin-bottom:20px;">
       <div class="card-header"><div class="card-title">Session theme</div></div>
-      <input type="text" value="Set-piece defending" style="width:100%;padding:9px 12px;border-radius:8px;border:1px solid var(--line);font-size:13px;">
+      <input type="text" id="focus-session-theme" value="" placeholder="e.g. Set-piece defending" style="width:100%;padding:9px 12px;border-radius:8px;border:1px solid var(--line);font-size:13px;" onchange="saveSessionTheme()">
+    </div>
+
+    <div class="card" style="margin-bottom:20px;">
+      <div class="card-header"><div class="card-title">Venue</div></div>
+      <input type="text" id="focus-session-venue" value="" placeholder="e.g. Turf Ground 2" style="width:100%;padding:9px 12px;border-radius:8px;border:1px solid var(--line);font-size:13px;" onchange="saveSessionVenue()">
     </div>
 
     <div class="card" style="margin-bottom:20px;">
       <div class="card-header">
-        <div class="card-title">Practice split &middot; Tue, 18 Aug</div>
+        <div class="card-title" id="focus-practice-split-title">Practice split</div>
       </div>
       <div style="font-size:12.5px;color:var(--muted);margin-bottom:14px;">Teams are auto-picked by attendance to keep both sides balanced &middot; tap a player's badge to move them between Orange Team and Green Team, then save to update the Dashboard.</div>
       <div class="format-row" id="focus-format-row">
-        <button class="format-chip" onclick="selectFocusFormat(this)" type="button">5v5</button>
-        <button class="format-chip" onclick="selectFocusFormat(this)" type="button">6v6</button>
-        <button class="format-chip" onclick="selectFocusFormat(this)" type="button">7v7</button>
-        <button class="format-chip active" onclick="selectFocusFormat(this)" type="button">9v9</button>
-        <button class="format-chip" onclick="selectFocusFormat(this)" type="button">11v11</button>
+        <button class="format-chip" onclick="selectFocusFormat(this, '5v5')" type="button">5v5</button>
+        <button class="format-chip" onclick="selectFocusFormat(this, '6v6')" type="button">6v6</button>
+        <button class="format-chip" onclick="selectFocusFormat(this, '7v7')" type="button">7v7</button>
+        <button class="format-chip" onclick="selectFocusFormat(this, '9v9')" type="button">9v9</button>
+        <button class="format-chip" onclick="selectFocusFormat(this, '11v11')" type="button">11v11</button>
       </div>
 
       <div style="display:flex;justify-content:space-between;align-items:center;margin:16px 0 8px;">
@@ -2323,6 +2299,8 @@
     return d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
   }
 
+  let currentSessionMeta = { title: 'Practice \u00B7 Regular', venue: '', theme: '' };
+
   function openAddPlayerModal() {
     document.getElementById('add-player-modal').classList.add('open');
   }
@@ -2609,7 +2587,7 @@
     const sessionTitleEl = document.getElementById('dashboard-focus-session-title');
     const sessionMetaEl = document.getElementById('dashboard-focus-session-meta');
     if (titleEl) titleEl.textContent = isToday ? "Today's focus" : 'Upcoming session focus';
-    if (sessionMetaEl) sessionMetaEl.textContent = formatSessionDate(nextDate) + ' \u00B7 8:00 \u2013 10:00 PM \u00B7 Theme: Set-piece defending';
+    if (typeof refreshSessionHeadersFromMeta === 'function') refreshSessionHeadersFromMeta();
 
     const phaseLabels = { warmup: 'Warm-up', drills: 'Drills', game: 'Game', cooldown: 'Cool down' };
     container.innerHTML = ['warmup', 'drills', 'game', 'cooldown'].map(phase => {
@@ -2894,19 +2872,26 @@
     const dateStr = formatDateKey(nextDate);
     try {
       const { data: existing, error: findErr } = await supabaseClient
-        .from('sessions').select('id').eq('session_date', dateStr).eq('session_type', 'practice').limit(1);
+        .from('sessions').select('*').eq('session_date', dateStr).eq('session_type', 'practice').limit(1);
       if (findErr) throw findErr;
 
+      let sessionRow;
       if (existing && existing.length) {
         currentSessionId = existing[0].id;
+        sessionRow = existing[0];
       } else {
         const { data: inserted, error: insertErr } = await supabaseClient
           .from('sessions')
           .insert({ session_type: 'practice', session_date: dateStr, title: 'Practice \u00B7 Regular', venue: 'Turf Ground 2', status: 'scheduled' })
-          .select('id').single();
+          .select('*').single();
         if (insertErr) throw insertErr;
         currentSessionId = inserted.id;
+        sessionRow = inserted;
       }
+
+      currentSessionMeta = { title: sessionRow.title || 'Practice \u00B7 Regular', venue: sessionRow.venue || '', theme: sessionRow.theme || '' };
+      if (typeof refreshSessionHeadersFromMeta === 'function') refreshSessionHeadersFromMeta();
+
       await loadFocusBlocksFromSupabase();
       await loadSessionAvailabilityFromSupabase();
     } catch (e) {
@@ -3110,8 +3095,10 @@
     if (typeof renderSquadDepth === 'function') renderSquadDepth();
     if (typeof renderTeamOverviewStats === 'function') renderTeamOverviewStats();
     if (typeof renderDefaulterList === 'function') renderDefaulterList();
+    if (typeof renderOutstandingFines === 'function') renderOutstandingFines();
     if (typeof showTeamFact === 'function') showTeamFact();
     if (typeof renderMatchSeasonStats === 'function') renderMatchSeasonStats();
+    if (typeof renderDashboardUpcomingEvents === 'function') renderDashboardUpcomingEvents();
     if (typeof updateFinesTotals === 'function') updateFinesTotals();
     if (typeof renderScheduleAttendanceAndTurnout === 'function') renderScheduleAttendanceAndTurnout();
     if (typeof renderDashboardRecentFines === 'function') renderDashboardRecentFines();
@@ -3145,6 +3132,7 @@
     const manageGroup = document.getElementById('manage-nav-group');
     if (manageGroup) manageGroup.style.display = isCurrentUserAdmin() ? 'flex' : 'none';
     renderSidebarUserCard();
+    if (typeof setLockDemo === 'function') setLockDemo();
   }
 
   function renderSidebarUserCard() {
@@ -3201,7 +3189,7 @@
 
     if (controls) controls.style.display = locked ? 'none' : 'block';
     if (banner) banner.style.display = locked ? 'flex' : 'none';
-    if (amCard) amCard.style.display = (locked && isCurrentUserAdmin()) ? 'block' : 'none';
+    if (amCard) amCard.style.display = isCurrentUserAdmin() ? 'block' : 'none';
   }
 
   const amFineMap = {
@@ -5001,10 +4989,37 @@
     }).join('');
   }
 
-  function renderAvailableTrend() {
+  async function renderAvailableTrend() {
     const svg = document.getElementById('available-trend-svg');
-    if (!svg) return;
-    const values = [13, 14, 15, 16, 18]; // team availability count, last 5 sessions \u2014 ends +2 vs prior session, matching the delta badge
+    if (!svg || typeof supabaseClient === 'undefined') return;
+
+    let values = [];
+    try {
+      const todayStr = new Date().toISOString().slice(0, 10);
+      const { data: sessions, error: sessErr } = await supabaseClient
+        .from('sessions').select('id, session_date').eq('session_type', 'practice')
+        .lt('session_date', todayStr).order('session_date', { ascending: false }).limit(5);
+      if (sessErr) throw sessErr;
+
+      if (sessions && sessions.length) {
+        const ordered = sessions.reverse(); // oldest to newest, left to right on the graph
+        for (const s of ordered) {
+          const { count, error: availErr } = await supabaseClient
+            .from('session_availability').select('id', { count: 'exact', head: true })
+            .eq('session_id', s.id).eq('available', true);
+          if (availErr) throw availErr;
+          values.push(count || 0);
+        }
+      }
+    } catch (e) {
+      console.error('renderAvailableTrend failed:', e);
+    }
+
+    if (values.length < 2) {
+      svg.innerHTML = ''; // not enough real history yet \u2014 show nothing rather than fake data
+      return;
+    }
+
     const w = 42, h = 12, pad = 2;
     const min = Math.min(...values), max = Math.max(...values);
     const range = (max - min) || 1;
@@ -5519,9 +5534,71 @@
     if (bEl) bEl.textContent = countB;
   }
 
-  function selectFocusFormat(el) {
+  function selectFocusFormat(el, format) {
     document.querySelectorAll('#focus-format-row .format-chip').forEach(c => c.classList.remove('active'));
     el.classList.add('active');
+    if (typeof currentSessionId !== 'undefined' && currentSessionId && typeof supabaseClient !== 'undefined') {
+      const newTitle = 'Practice \u00B7 ' + format;
+      supabaseClient.from('sessions').update({ title: newTitle }).eq('id', currentSessionId).then(({ error }) => {
+        if (error) console.error('Failed to save format:', error);
+        else if (typeof currentSessionMeta !== 'undefined') {
+          currentSessionMeta.title = newTitle;
+          if (typeof refreshSessionHeadersFromMeta === 'function') refreshSessionHeadersFromMeta();
+        }
+      });
+    }
+  }
+
+  function saveSessionTheme() {
+    const val = document.getElementById('focus-session-theme').value.trim();
+    if (typeof currentSessionId !== 'undefined' && currentSessionId && typeof supabaseClient !== 'undefined') {
+      supabaseClient.from('sessions').update({ theme: val }).eq('id', currentSessionId).then(({ error }) => {
+        if (error) console.error('Failed to save theme:', error);
+        else if (typeof currentSessionMeta !== 'undefined') {
+          currentSessionMeta.theme = val;
+          if (typeof refreshSessionHeadersFromMeta === 'function') refreshSessionHeadersFromMeta();
+        }
+      });
+    }
+  }
+
+  function saveSessionVenue() {
+    const val = document.getElementById('focus-session-venue').value.trim();
+    if (typeof currentSessionId !== 'undefined' && currentSessionId && typeof supabaseClient !== 'undefined') {
+      supabaseClient.from('sessions').update({ venue: val }).eq('id', currentSessionId).then(({ error }) => {
+        if (error) console.error('Failed to save venue:', error);
+        else if (typeof currentSessionMeta !== 'undefined') {
+          currentSessionMeta.venue = val;
+          if (typeof refreshSessionHeadersFromMeta === 'function') refreshSessionHeadersFromMeta();
+        }
+      });
+    }
+  }
+
+  function refreshSessionHeadersFromMeta() {
+    const nextDate = (typeof getNextSessionDate === 'function') ? getNextSessionDate() : new Date();
+    const dateLabel = (typeof formatSessionDate === 'function') ? formatSessionDate(nextDate) : '';
+    const metaLine = dateLabel + ' \u00B7 8:00 \u2013 10:00 PM' + (currentSessionMeta.venue ? ' \u00B7 ' + currentSessionMeta.venue : '') + (currentSessionMeta.theme ? ' \u00B7 Theme: ' + currentSessionMeta.theme : '');
+
+    const dashTitleEl = document.getElementById('dashboard-focus-session-title');
+    const dashMetaEl = document.getElementById('dashboard-focus-session-meta');
+    if (dashTitleEl) dashTitleEl.textContent = currentSessionMeta.title;
+    if (dashMetaEl) dashMetaEl.textContent = metaLine;
+
+    const sess1Meta = document.getElementById('sess1-meta');
+    if (sess1Meta) sess1Meta.textContent = metaLine;
+
+    const splitTitle = document.getElementById('focus-practice-split-title');
+    if (splitTitle) splitTitle.textContent = 'Practice split';
+
+    const themeInput = document.getElementById('focus-session-theme');
+    const venueInput = document.getElementById('focus-session-venue');
+    if (themeInput && document.activeElement !== themeInput) themeInput.value = currentSessionMeta.theme || '';
+    if (venueInput && document.activeElement !== venueInput) venueInput.value = currentSessionMeta.venue || '';
+
+    document.querySelectorAll('#focus-format-row .format-chip').forEach(chip => {
+      chip.classList.toggle('active', currentSessionMeta.title === 'Practice \u00B7 ' + chip.textContent.trim());
+    });
   }
 
   function renderDashboardRecentFines() {
@@ -5571,6 +5648,64 @@
     return d.toISOString().slice(0, 10);
   }
 
+  async function renderDashboardUpcomingEvents() {
+    const container = document.getElementById('dashboard-upcoming-events');
+    if (!container) return;
+
+    const events = [];
+
+    // Next 2 practice sessions (real, respects cancelled state)
+    getUpcomingSessionDates(2).forEach(d => {
+      const key = formatDateKey(d);
+      events.push({
+        date: d, title: 'Practice \u00B7 Regular',
+        meta: d.toLocaleDateString('en-GB', { weekday: 'short' }) + ' \u00B7 8:00 \u2013 10:00 PM',
+        cancelled: !!sessionCancelledMap[key]
+      });
+    });
+
+    // Next real scheduled match, if any
+    if (typeof supabaseClient !== 'undefined') {
+      try {
+        const todayStr = new Date().toISOString().slice(0, 10);
+        const { data } = await supabaseClient
+          .from('sessions').select('*').eq('session_type', 'match').eq('status', 'scheduled')
+          .gte('session_date', todayStr).order('session_date', { ascending: true }).limit(1);
+        if (data && data.length) {
+          const m = data[0];
+          const mDate = new Date(m.session_date);
+          events.push({
+            date: mDate, title: m.title,
+            meta: mDate.toLocaleDateString('en-GB', { weekday: 'short' }) + (m.venue ? ' \u00B7 ' + m.venue : ''),
+            cancelled: false
+          });
+        }
+      } catch (e) {
+        console.error('Failed to load upcoming match for dashboard:', e);
+      }
+    }
+
+    events.sort((a, b) => a.date - b.date);
+
+    if (!events.length) {
+      container.innerHTML = `<div style="font-size:12.5px;color:var(--muted);padding:8px 0;">No upcoming events scheduled.</div>`;
+      return;
+    }
+
+    container.innerHTML = events.map(ev => `
+      <div class="session-row">
+        <div class="session-left">
+          <div class="session-date-box"><span class="d">${ev.date.getDate()}</span><span class="m">${ev.date.toLocaleDateString('en-GB', { month: 'short' })}</span></div>
+          <div>
+            <div class="session-title-txt">${ev.title}</div>
+            <div class="session-meta">${ev.meta}</div>
+          </div>
+        </div>
+        <span class="status-pill ${ev.cancelled ? 'pill-cancelled' : 'pill-confirmed'}">${ev.cancelled ? 'Cancelled' : 'Confirmed'}</span>
+      </div>
+    `).join('');
+  }
+
   function renderUpcomingSessionsList() {
     const container = document.getElementById('upcoming-sessions-list');
     if (!container) return;
@@ -5604,12 +5739,7 @@
   }
 
   function renderSingleUpcomingSessionDate() {
-    const metaEl = document.getElementById('sess1-meta');
-    if (!metaEl) return;
-    const nextDate = getNextSessionDate();
-    const dayLabel = nextDate.toLocaleDateString('en-GB', { weekday: 'short' });
-    const dateLabel = nextDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
-    metaEl.textContent = dayLabel + ', ' + dateLabel + ' \u00B7 8:00 \u2013 10:00 PM \u00B7 Turf Ground 2 \u00B7 Theme: Set-piece defending';
+    if (typeof refreshSessionHeadersFromMeta === 'function') refreshSessionHeadersFromMeta();
   }
 
   function recomputeAttendancePercent(p) {
@@ -5764,9 +5894,14 @@
       attEl.style.color = pct >= 85 ? 'var(--green)' : (pct >= 70 ? 'var(--amber)' : 'var(--red)');
     }
     const turnoutEl = document.getElementById('turnout-sess1-label');
+    const turnoutBarEl = document.getElementById('turnout-sess1-bar');
     if (turnoutEl) {
       const available = squadOrder.filter(k => playerData[k].available).length;
       turnoutEl.textContent = available + ' / ' + squadOrder.length + ' confirmed';
+      if (turnoutBarEl) {
+        const pct = squadOrder.length ? Math.round((available / squadOrder.length) * 100) : 0;
+        turnoutBarEl.style.width = pct + '%';
+      }
     }
   }
 
