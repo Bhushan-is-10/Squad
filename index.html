@@ -947,7 +947,7 @@
 
     <div class="card">
       <div class="card-header">
-        <div class="card-title">Practice &middot; 7v7 <span style="font-size:10px;font-weight:600;color:var(--muted);background:var(--panel);padding:2px 8px;border-radius:6px;margin-left:6px;">Auto-generated &middot; Tue</span></div>
+        <div class="card-title" id="sess1-title">Practice &middot; 7v7 <span id="sess1-auto-badge" style="font-size:10px;font-weight:600;color:var(--muted);background:var(--panel);padding:2px 8px;border-radius:6px;margin-left:6px;">Auto-generated &middot; Tue</span></div>
         <span class="status-pill pill-confirmed" id="session-state-sess1">Scheduled</span>
       </div>
       <div style="font-size:12.5px;color:var(--muted);margin-bottom:10px;" id="sess1-meta">Tue, 18 Aug &middot; 8:00 &ndash; 10:00 PM &middot; Turf Ground 2 &middot; Theme: Set-piece defending</div>
@@ -1018,6 +1018,13 @@
         <div class="card-title">Attendance manager<span class="am-badge"><i class="ti ti-shield-lock" aria-hidden="true"></i>Fine collector / Admin only</span></div>
       </div>
       <div style="font-size:12px;color:var(--muted);margin-bottom:14px;">Mark actual attendance at the ground &middot; overrides player-submitted availability &middot; drives fines automatically</div>
+
+      <div class="form-group" style="margin-bottom:14px;">
+        <label class="form-label">Session</label>
+        <select class="form-select" id="am-session-select" onchange="onAttendanceSessionChanged()">
+          <option value="">Loading sessions&hellip;</option>
+        </select>
+      </div>
 
       <div style="display:flex;align-items:center;gap:12px;background:var(--panel);border-radius:10px;padding:10px 14px;margin-bottom:16px;flex-wrap:wrap;">
         <div style="display:flex;align-items:center;gap:6px;">
@@ -3227,6 +3234,82 @@
     if (cutoffDisplay) cutoffDisplay.textContent = formatTime12h(computeLateCutoff(sessionInTime));
   }
 
+  let selectedAttendanceSessionId = null;
+  let selectedAttendanceSessionDate = null;
+  let attendanceSessionsCache = [];
+
+  async function loadAttendanceSessionOptions() {
+    const select = document.getElementById('am-session-select');
+    if (!select || typeof supabaseClient === 'undefined') return;
+    try {
+      const { data, error } = await supabaseClient
+        .from('sessions').select('id, session_date, title, status').eq('session_type', 'practice')
+        .order('session_date', { ascending: false }).limit(8);
+      if (error) throw error;
+
+      attendanceSessionsCache = data || [];
+      if (!attendanceSessionsCache.length) {
+        select.innerHTML = '<option value="">No sessions found</option>';
+        return;
+      }
+
+      const todayStr = new Date().toISOString().slice(0, 10);
+      select.innerHTML = attendanceSessionsCache.map(s => {
+        const label = new Date(s.session_date).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
+        const tag = s.session_date === todayStr ? ' (today)' : (s.session_date < todayStr ? ' (past)' : ' (upcoming)');
+        return `<option value="${s.id}">${label}${tag} \u00B7 ${s.title}</option>`;
+      }).join('');
+
+      // Default to the most recent PAST or TODAY session (not a future one), since that's almost
+      // always what a coach means by "mark attendance" right after it happens.
+      const defaultSession = attendanceSessionsCache.find(s => s.session_date <= todayStr) || attendanceSessionsCache[0];
+      select.value = defaultSession.id;
+      selectedAttendanceSessionId = defaultSession.id;
+      selectedAttendanceSessionDate = defaultSession.session_date;
+      await loadExistingAttendanceForSelectedSession();
+    } catch (e) {
+      console.error('Failed to load attendance session options:', e);
+      select.innerHTML = '<option value="">Could not load sessions</option>';
+    }
+  }
+
+  async function onAttendanceSessionChanged() {
+    const select = document.getElementById('am-session-select');
+    const session = attendanceSessionsCache.find(s => s.id === select.value);
+    if (!session) return;
+    selectedAttendanceSessionId = session.id;
+    selectedAttendanceSessionDate = session.session_date;
+    await loadExistingAttendanceForSelectedSession();
+  }
+
+  async function loadExistingAttendanceForSelectedSession() {
+    // Reset every dropdown to Present, then apply whatever's already recorded for this session (if any),
+    // so re-opening a session you already marked shows what you actually entered, not a blank slate.
+    squadOrder.forEach(key => {
+      const select = document.getElementById('am-select-' + key);
+      if (select) { select.value = 'present'; applyAmStatus(key, 'present'); }
+    });
+
+    if (!selectedAttendanceSessionId || typeof supabaseClient === 'undefined') return;
+    try {
+      const { data, error } = await supabaseClient
+        .from('attendance').select('player_id, status, detail_status').eq('session_id', selectedAttendanceSessionId);
+      if (error) throw error;
+      (data || []).forEach(row => {
+        const key = Object.keys(playerData).find(k => playerData[k].supabaseId === row.player_id);
+        const select = document.getElementById('am-select-' + key);
+        if (select) {
+          // Prefer the specific status if we saved it; older records (pre-fix) only have the broad Present/Absent.
+          const val = row.detail_status || (row.status === 'Absent' ? 'no-show' : 'present');
+          select.value = val;
+          applyAmStatus(key, val);
+        }
+      });
+    } catch (e) {
+      console.error('Failed to load existing attendance:', e);
+    }
+  }
+
   function renderAttendanceManager() {
     const container = document.getElementById('attendance-manager-rows');
     if (!container) return;
@@ -3266,9 +3349,10 @@
   }
 
   async function saveAttendance() {
-    const today = new Date();
-    const dateLabel = today.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
-    const dateKey = today.toISOString().slice(0, 10);
+    const sessionDate = selectedAttendanceSessionDate ? new Date(selectedAttendanceSessionDate + 'T00:00:00') : new Date();
+    const dateLabel = sessionDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+    const dateKey = selectedAttendanceSessionDate || new Date().toISOString().slice(0, 10);
+    const targetSessionId = selectedAttendanceSessionId || currentSessionId;
     let finesCreated = 0, presentCount = 0;
     const dbWrites = [];
     const sessionPresent = [], sessionLate = [], sessionAbsent = [];
@@ -3320,16 +3404,16 @@
       p.pointsEarned = (p.pointsEarned || 0) + Math.max(0, pointsDelta);
 
       // Persist to Supabase: attendance row, fine row, and updated points on the player record
-      if (typeof currentSessionId !== 'undefined' && currentSessionId && p.supabaseId && typeof supabaseClient !== 'undefined') {
+      if (targetSessionId && p.supabaseId && typeof supabaseClient !== 'undefined') {
         dbWrites.push(
           supabaseClient.from('attendance').upsert({
-            session_id: currentSessionId, player_id: p.supabaseId, status: attendanceStatus, team: p.team || null
+            session_id: targetSessionId, player_id: p.supabaseId, status: attendanceStatus, team: p.team || null, detail_status: status
           }, { onConflict: 'session_id,player_id' })
         );
         if (fineReason) {
           dbWrites.push(
             supabaseClient.from('fines').insert({
-              player_id: p.supabaseId, reason: fineReason, amount: fineAmount, remaining: fineAmount, status: 'unpaid', session_id: currentSessionId
+              player_id: p.supabaseId, reason: fineReason, amount: fineAmount, remaining: fineAmount, status: 'unpaid', session_id: targetSessionId
             }).select('id').single().then(({ data, error }) => {
               if (!error && data && newFineRef) newFineRef.dbId = data.id;
               return { error };
@@ -5588,6 +5672,14 @@
     const sess1Meta = document.getElementById('sess1-meta');
     if (sess1Meta) sess1Meta.textContent = metaLine;
 
+    const sess1TitleEl = document.getElementById('sess1-title');
+    const sess1BadgeEl = document.getElementById('sess1-auto-badge');
+    const dayAbbrev = nextDate.toLocaleDateString('en-GB', { weekday: 'short' });
+    if (sess1TitleEl && sess1BadgeEl) {
+      sess1TitleEl.childNodes[0].textContent = currentSessionMeta.title + ' ';
+      sess1BadgeEl.textContent = 'Auto-generated \u00B7 ' + dayAbbrev;
+    }
+
     const splitTitle = document.getElementById('focus-practice-split-title');
     if (splitTitle) splitTitle.textContent = 'Practice split';
 
@@ -6231,6 +6323,7 @@
     window.scrollTo(0, 0);
     if (name === 'focus' && typeof loadScheduledMatchesForResult === 'function') loadScheduledMatchesForResult();
     if (name === 'schedule' && typeof renderScheduleAttendanceAndTurnout === 'function') renderScheduleAttendanceAndTurnout();
+    if (name === 'schedule' && typeof loadAttendanceSessionOptions === 'function') loadAttendanceSessionOptions();
     if (name === 'matches') {
       if (typeof renderMatchSeasonStats === 'function') renderMatchSeasonStats();
       if (typeof renderUpcomingMatch === 'function') renderUpcomingMatch();
