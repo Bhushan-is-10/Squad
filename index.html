@@ -3043,8 +3043,7 @@
 
   function loadRosterIntoApp(rows, selfRow) {
     // Rebuild playerData/squadOrder/squadColors from Supabase rows. Fines and attendance
-    // history aren't wired to the database yet (next steps) \u2014 they start empty here
-    // and existing local demo data no longer applies once live rows are loaded.
+    // history are loaded separately below (bulk queries) once the roster itself is built.
     squadOrder.length = 0;
     Object.keys(squadColors).forEach(k => delete squadColors[k]);
     Object.keys(playerData).forEach(k => delete playerData[k]);
@@ -3089,6 +3088,67 @@
         currentLoggedInKey = key;
       }
     });
+
+    // Load real fines and attendance history from Supabase (bulk queries, not one per player)
+    // so historical data survives a page reload instead of only existing for the session that created it.
+    if (typeof supabaseClient !== 'undefined') {
+      const supabaseIdToKey = {};
+      squadOrder.forEach(k => { supabaseIdToKey[playerData[k].supabaseId] = k; });
+
+      Promise.all([
+        supabaseClient.from('fines').select('*'),
+        supabaseClient.from('attendance').select('*, sessions(session_date, title)')
+      ]).then(([finesRes, attRes]) => {
+        if (finesRes.error) { console.error('Failed to load fines:', finesRes.error); return; }
+        (finesRes.data || []).forEach(f => {
+          const key = supabaseIdToKey[f.player_id];
+          if (!key) return;
+          playerData[key].fines.push({
+            dbId: f.id, reason: f.reason, date: f.created_at ? new Date(f.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) : '',
+            amount: f.amount, status: f.status, remaining: f.remaining != null ? f.remaining : f.amount
+          });
+        });
+        squadOrder.forEach(k => {
+          const p = playerData[k];
+          p.owed = p.fines.reduce((sum, f) => sum + (f.status !== 'paid' ? (f.remaining != null ? f.remaining : f.amount) : 0), 0);
+        });
+
+        if (attRes.error) { console.error('Failed to load attendance history:', attRes.error); }
+        else {
+          (attRes.data || []).forEach(a => {
+            const key = supabaseIdToKey[a.player_id];
+            if (!key) return;
+            const sessionDate = a.sessions ? a.sessions.session_date : null;
+            playerData[key].attendanceHistory.push({
+              title: (a.sessions && a.sessions.title) || 'Practice \u00B7 Regular',
+              date: sessionDate ? new Date(sessionDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) : '',
+              status: a.status,
+              badge: a.status === 'Present' ? 'badge-paid' : 'badge-unpaid',
+              _sortDate: sessionDate
+            });
+          });
+          squadOrder.forEach(k => {
+            const p = playerData[k];
+            p.attendanceHistory.sort((a, b) => (b._sortDate || '').localeCompare(a._sortDate || ''));
+            if (typeof recomputeAttendancePercent === 'function') recomputeAttendancePercent(p);
+          });
+        }
+
+        // Re-render everything that depends on fines/attendance now that real data has loaded
+        if (typeof renderOutstandingFines === 'function') renderOutstandingFines();
+        if (typeof updateFinesTotals === 'function') updateFinesTotals();
+        if (typeof renderPendingConfirmationTile === 'function') renderPendingConfirmationTile();
+        if (typeof renderRecentlySettled === 'function') renderRecentlySettled();
+        if (typeof renderDefaulterList === 'function') renderDefaulterList();
+        if (typeof renderDashboardRecentFines === 'function') renderDashboardRecentFines();
+        if (typeof renderTeamOverviewStats === 'function') renderTeamOverviewStats();
+        if (typeof updateGreetingPointsRank === 'function') updateGreetingPointsRank();
+        if (typeof updateAccountStatusTile === 'function') updateAccountStatusTile();
+        if (typeof renderLast5SessionsDots === 'function') renderLast5SessionsDots();
+        if (typeof renderAdminSquadGrid === 'function') renderAdminSquadGrid();
+        if (typeof renderSquadPlayerGrid === 'function') renderSquadPlayerGrid();
+      }).catch(e => console.error('Failed to load fines/attendance history:', e));
+    }
 
     // Re-render everything that depends on the roster.
     if (typeof renderAdminSquadGrid === 'function') renderAdminSquadGrid();
@@ -3371,11 +3431,11 @@
       if (status === 'present') {
         attendanceStatus = 'Present'; pointsDelta = 10;
       } else if (status === 'late') {
-        attendanceStatus = 'Present'; fineReason = 'Late arrival'; fineAmount = 30; pointsDelta = -2;
+        attendanceStatus = 'Present'; fineReason = 'Late arrival'; fineAmount = 30; pointsDelta = 8;
       } else if (status === 'no-show') {
         attendanceStatus = 'Absent'; fineReason = 'No-show'; fineAmount = 50; pointsDelta = -4;
       } else if (status === 'dress-code') {
-        attendanceStatus = 'Present'; fineReason = 'No Bibs'; fineAmount = 30; pointsDelta = -2;
+        attendanceStatus = 'Present'; fineReason = 'No Bibs'; fineAmount = 30; pointsDelta = 8;
       }
 
       // Record attendance history for this session
@@ -3447,6 +3507,7 @@
 
     // Refresh every view that depends on attendance/fines/points
     if (typeof renderOutstandingFines === 'function') renderOutstandingFines();
+    if (typeof updateFinesTotals === 'function') updateFinesTotals();
     if (typeof renderDashboardRecentFines === 'function') renderDashboardRecentFines();
     if (typeof renderPendingConfirmationTile === 'function') renderPendingConfirmationTile();
     if (typeof renderRecentlySettled === 'function') renderRecentlySettled();
@@ -5379,6 +5440,7 @@
 
     closeRecordFineModal();
     renderOutstandingFines();
+    updateFinesTotals();
     renderPendingConfirmationTile();
     renderRecentlySettled();
     if (typeof renderDashboardRecentFines === 'function') renderDashboardRecentFines();
