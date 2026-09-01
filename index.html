@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Squad Practice Tracker</title>
+<title>Pro Squad - Ultimate RFC</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tabler-icons/2.44.0/iconfont/tabler-icons.min.css">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
@@ -64,6 +64,8 @@
     border: none; background: none; width: 100%; text-align: left;
   }
   .nav-item i { font-size: 17px; width: 17px; }
+  .nav-item svg { width: 17px; height: 17px; flex-shrink: 0; }
+  .logo-mark svg { width: 31px; height: 31px; }
   .nav-item:hover { background: var(--panel); color: var(--ink); }
   .nav-item.active { background: var(--coral-light); color: var(--coral); font-weight: 600; }
 
@@ -104,6 +106,7 @@
   .trend-label { font-size: 8px; color: var(--muted); white-space: nowrap; letter-spacing: 0.2px; }
   .stat-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; }
   .stat-icon { width: 34px; height: 34px; border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+  .stat-icon svg { width: 23px; height: 23px; }
   .stat-value { font-size: 22px; font-weight: 600; margin-bottom: 2px; }
   .stat-label { color: var(--muted); font-size: 10.5px; white-space: nowrap; }
 
@@ -515,9 +518,10 @@
   .block-title { font-size: 13.5px; font-weight: 600; }
   .block-dur { font-size: 11px; color: var(--muted); background: #fff; border: 1px solid var(--line); border-radius: 6px; padding: 2px 8px; }
   .block-desc { font-size: 12.5px; color: var(--muted); }
-  .block-actions { display: flex; gap: 8px; flex-shrink: 0; }
-  .block-actions i { font-size: 15px; color: var(--faint); cursor: pointer; }
-  .block-actions i:hover { color: var(--ink); }
+  .block-actions { display: flex; gap: 12px; flex-shrink: 0; }
+  .block-actions span { cursor: pointer; color: var(--faint); }
+  .block-actions span:hover, .block-actions span:active { color: var(--ink); }
+  .block-actions i { font-size: 14px; }
 
   .add-block-form { display: flex; flex-direction: column; gap: 10px; padding: 16px; border: 1px dashed var(--line); border-radius: 12px; }
   .add-block-form input, .add-block-form textarea {
@@ -592,9 +596,12 @@
   <div style="width:100%;max-width:340px;padding:24px;">
     <div style="text-align:center;margin-bottom:28px;">
       <div style="width:52px;height:52px;border-radius:14px;background:var(--coral);display:flex;align-items:center;justify-content:center;margin:0 auto 14px;">
-        <i class="ti ti-ball-football" style="font-size:26px;color:#fff;" aria-hidden="true"></i>
+        <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.3" stroke-linejoin="round" style="width:45px;height:45px;" aria-hidden="true">
+          <path d="M4.5 4.5h15v7.5c0 4.3-3.6 7.3-7.5 9-3.9-1.7-7.5-4.7-7.5-9z"/>
+          <text x="12" y="13.2" font-size="5.3" font-weight="700" fill="#fff" stroke="none" text-anchor="middle" font-family="Arial, Helvetica, sans-serif">RFC</text>
+        </svg>
       </div>
-      <div style="font-size:18px;font-weight:700;">Squad Practice Tracker</div>
+      <div style="font-size:18px;font-weight:700;">Pro Squad - Ultimate RFC</div>
       <div style="font-size:12.5px;color:var(--muted);margin-top:4px;">Enter your phone number to continue</div>
     </div>
     <input type="tel" id="login-phone-input" placeholder="Phone number" style="width:100%;padding:12px 14px;border-radius:10px;border:1px solid var(--line);font-size:14px;margin-bottom:10px;box-sizing:border-box;">
@@ -606,34 +613,38 @@
 
 <div class="sidebar">
   <div class="logo">
-    <div class="logo-mark"><i class="ti ti-ball-football" aria-hidden="true"></i></div>
-    <div class="logo-text">Tracker<span>SQUAD PRACTICE</span></div>
+    <div class="logo-mark">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round" aria-hidden="true">
+        <path d="M4.5 4.5h15v7.5c0 4.3-3.6 7.3-7.5 9-3.9-1.7-7.5-4.7-7.5-9z"/>
+        <text x="12" y="13.2" font-size="5.3" font-weight="700" fill="currentColor" stroke="none" text-anchor="middle" font-family="Arial, Helvetica, sans-serif">RFC</text>
+      </svg>
+    </div>
+    <div class="logo-text">Pro Squad<span>ULTIMATE RFC</span></div>
   </div>
 
   <div class="nav-group">
     <div class="nav-label">Overview</div>
-    <button class="nav-item active" data-page="home"><i class="ti ti-layout-dashboard" aria-hidden="true"></i>Dashboard</button>
-    <button class="nav-item" data-page="schedule"><i class="ti ti-calendar" aria-hidden="true"></i>Schedule</button>
-    <button class="nav-item" data-page="matches"><i class="ti ti-shirt-sport" aria-hidden="true"></i>Matches</button>
-    <button class="nav-item" data-page="squad-player"><i class="ti ti-users" aria-hidden="true"></i>Squad</button>
-    <button class="nav-item" data-page="messages"><i class="ti ti-message-circle" aria-hidden="true"></i>Messages</button>
-    <button class="nav-item" data-page="player" onclick="showPlayer(currentLoggedInKey)"><i class="ti ti-user" aria-hidden="true"></i>My Profile</button>
+    <button class="nav-item active" data-page="home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg>Dashboard</button>
+    <button class="nav-item" data-page="schedule"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 9h16M8 3v3M16 3v3"/></svg>Schedule</button>
+    <button class="nav-item" data-page="matches"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 4h8v4a4 4 0 0 1-8 0V4z"/><path d="M8 5H5.5A2 2 0 0 0 7 9M16 5h2.5A2 2 0 0 1 16 9"/><path d="M12 12v3"/><path d="M9.5 19h5M10 16h4v3h-4z"/></svg>Matches</button>
+    <button class="nav-item" data-page="squad-player"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8.5 4L4 7v3.5l2.2-1V19a1.5 1.5 0 0 0 1.5 1.5h8.6A1.5 1.5 0 0 0 17.8 19V9.5l2.2 1V7l-4.5-3-2 2h-2.5z"/></svg>Squad</button>
+    <button class="nav-item" data-page="messages" disabled style="opacity:0.45;cursor:not-allowed;" title="Coming soon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H9l-4 3v-3H6a2 2 0 0 1-2-2z"/></svg>Messages<span style="margin-left:auto;font-size:9px;font-weight:700;color:var(--muted);background:var(--panel);padding:2px 6px;border-radius:5px;">SOON</span></button>
+    <button class="nav-item" data-page="player" onclick="showPlayer(currentLoggedInKey)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="3.5"/><path d="M5.5 20v-1a6.5 6.5 0 0 1 13 0v1"/></svg>My Profile</button>
   </div>
 
-  <div class="nav-group">
+  <div class="nav-group" id="manage-nav-group" style="display:none;">
     <div class="nav-label">Manage</div>
-    <button class="nav-item" data-page="focus"><i class="ti ti-clipboard-list" aria-hidden="true"></i>Focus setup</button>
-    <button class="nav-item" data-page="analytics"><i class="ti ti-chart-bar" aria-hidden="true"></i>Analytics</button>
-    <button class="nav-item" data-page="fines"><i class="ti ti-currency-rupee" aria-hidden="true"></i>Fines</button>
-    <button class="nav-item" data-page="squad"><i class="ti ti-users" aria-hidden="true"></i>Squad</button>
+    <button class="nav-item" data-page="focus"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4l4.2 14H7.8z"/><path d="M9.6 12h4.8"/><path d="M6 18h12"/></svg>Focus setup</button>
+    <button class="nav-item" data-page="analytics"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M4 20h16"/></svg>Analytics</button>
+    <button class="nav-item" data-page="fines"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M6.5 6v12M17.5 6v12"/></svg>Fines</button>
+    <button class="nav-item" data-page="squad"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8.5 4L4 7v3.5l2.2-1V19a1.5 1.5 0 0 0 1.5 1.5h8.6A1.5 1.5 0 0 0 17.8 19V9.5l2.2 1V7l-4.5-3-2 2h-2.5z"/></svg>Squad</button>
   </div>
 
   <div class="sidebar-footer">
     <div class="user-card">
-      <div class="user-avatar">RK</div>
+      <div class="user-avatar" id="sidebar-user-avatar">VS</div>
       <div>
-        <div class="user-name">Ravi Kumar</div>
-        <div class="user-role">Admin</div>
+        <div class="user-name" id="sidebar-user-name">Vikram Singh</div>
       </div>
     </div>
   </div>
@@ -694,15 +705,6 @@
       <div class="facts-tile-row" id="facts-tile-row"></div>
     </div>
 
-    <div class="demo-toggle-row">
-      <i class="ti ti-clock" aria-hidden="true" style="color:var(--muted);"></i>
-      <span style="font-size:12.5px;color:var(--muted);">Check-in window (demo):</span>
-      <select id="checkin-demo-select" onchange="setCheckinWindow(this.value)">
-        <option value="open">Today &middot; submissions open</option>
-        <option value="closed">Day has ended &middot; submissions closed</option>
-      </select>
-    </div>
-
     <div class="stat-section-label">
       <span class="stat-section-ribbon ribbon-team">Team</span>
       <span class="stat-section-sub">Squad-wide stats to date</span>
@@ -710,10 +712,9 @@
     <div class="stat-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:24px;">
       <div class="stat-card">
         <div class="stat-top">
-          <div class="stat-icon" style="background:var(--coral-light);color:var(--coral);"><i class="ti ti-users" aria-hidden="true"></i></div>
-          <span class="stat-delta" style="color:var(--green);background:var(--green-light);">+2</span>
+          <div class="stat-icon" style="background:var(--coral-light);color:var(--coral);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="2.5"/><path d="M4.5 18v-1a4.5 4.5 0 0 1 9 0v1"/><circle cx="17" cy="9" r="2"/><path d="M14.5 18v-0.5a3.5 3.5 0 0 1 6 0v0.5"/></svg></div>
         </div>
-        <div class="stat-value">18</div>
+        <div class="stat-value" id="team-stat-available">0</div>
         <div style="position:relative;">
           <div class="stat-label">Available today</div>
           <div style="position:absolute;right:0;bottom:0;display:flex;flex-direction:column;align-items:flex-end;gap:1px;">
@@ -724,27 +725,26 @@
       </div>
       <div class="stat-card">
         <div class="stat-top">
-          <div class="stat-icon" style="background:#e6f1fb;color:var(--blue);"><i class="ti ti-chart-line" aria-hidden="true"></i></div>
-          <span class="stat-delta" style="color:var(--green);background:var(--green-light);">+4%</span>
+          <div class="stat-icon" style="background:#e6f1fb;color:var(--blue);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 9h16M8 3v3M16 3v3"/><path d="M8 13l2 2 4-4"/></svg></div>
         </div>
-        <div class="stat-value">92%</div>
+        <div class="stat-value" id="team-stat-attendance">0%</div>
         <div class="stat-label">30-day attendance</div>
       </div>
       <div class="stat-card">
         <div class="stat-top">
-          <div class="stat-icon" style="background:var(--green-light);color:var(--green);"><i class="ti ti-ball-football" aria-hidden="true"></i></div>
-          <span class="stat-delta" style="color:var(--muted);background:var(--panel);">9 goals</span>
+          <div class="stat-icon" style="background:var(--green-light);color:var(--green);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 15C5 13 6 12 7 11C9 9.5 10.5 8.5 12 8C14 7.3 15.5 6.8 17 6C18 5.5 19 6 19.3 7C19.6 8.5 19.8 10 20 12L20 15"/><rect x="2.5" y="15" width="18" height="2.3" rx="1"/><path d="M10 9.3l1.2 1.3M12.7 8.3l1.2 1.3M15.3 7.3l1.2 1.3"/></svg></div>
+          <span class="stat-delta" id="team-stat-topscorer-goals" style="color:var(--muted);background:var(--panel);">0 goals</span>
         </div>
-        <div class="stat-value">Arjun</div>
+        <div class="stat-value" id="team-stat-topscorer">&mdash;</div>
         <div class="stat-label">Top scorer overall</div>
       </div>
       <div class="stat-card">
         <div class="stat-top">
-          <div class="stat-icon" style="background:#f2e9ff;color:#7F56D9;"><i class="ti ti-award" aria-hidden="true"></i></div>
-          <span class="stat-delta" style="color:var(--muted);background:var(--panel);">97%</span>
+          <div class="stat-icon" style="background:#f2e9ff;color:#7F56D9;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 3l1.5 5M15 3l-1.5 5"/><circle cx="12" cy="14" r="6"/><path d="M12 11l1.2 2.4 2.6.4-1.9 1.9.5 2.6-2.4-1.3-2.4 1.3.5-2.6-1.9-1.9 2.6-.4z"/></svg></div>
+          <span class="stat-delta" id="team-stat-bestattendance-pct" style="color:var(--muted);background:var(--panel);">0%</span>
         </div>
-        <div class="stat-value">Dev</div>
-        <div class="stat-label">Best attendance &middot; min. 10 sessions</div>
+        <div class="stat-value" id="team-stat-bestattendance">&mdash;</div>
+        <div class="stat-label">Best attendance &middot; min. 5 sessions</div>
       </div>
     </div>
 
@@ -759,28 +759,28 @@
           <div class="last5-label">Last 5 sessions</div>
         </div>
         <div class="stat-top">
-          <div class="stat-icon" style="background:var(--amber-light);color:var(--amber);"><i class="ti ti-calendar-question" aria-hidden="true"></i></div>
+          <div class="stat-icon" style="background:var(--amber-light);color:var(--amber);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 9h16M8 3v3M16 3v3"/><path d="M12 13v.01M10 15.5a2 2 0 0 1 4 0c0 1-1 1.3-1.5 1.7"/></svg></div>
         </div>
         <div class="stat-value" style="color:var(--amber);" id="personal-status-value">Unconfirmed</div>
         <div class="stat-label" id="personal-status-desc">Counts as absent after lock time</div>
       </div>
       <div class="stat-card clickable" onclick="showPlayer(currentLoggedInKey)">
         <div class="stat-top">
-          <div class="stat-icon" style="background:var(--red-light);color:var(--red);"><i class="ti ti-currency-rupee" aria-hidden="true"></i></div>
+          <div class="stat-icon" style="background:var(--red-light);color:var(--red);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M6.5 6v12M17.5 6v12"/></svg></div>
         </div>
         <div class="stat-value" style="color:var(--red);">&#8377;50</div>
         <div class="stat-label">Your pending fine &middot; view details</div>
       </div>
       <div class="stat-card clickable" onclick="showPlayer(currentLoggedInKey)">
         <div class="stat-top">
-          <div class="stat-icon" style="background:#e6f1fb;color:var(--blue);"><i class="ti ti-chart-line" aria-hidden="true"></i></div>
+          <div class="stat-icon" style="background:#e6f1fb;color:var(--blue);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 9h16M8 3v3M16 3v3"/></svg></div>
         </div>
         <div class="stat-value">74%</div>
         <div class="stat-label">Your attendance till date</div>
       </div>
       <div class="stat-card clickable" onclick="showPlayer(currentLoggedInKey)">
         <div class="stat-top">
-          <div class="stat-icon" id="account-status-icon-wrap" style="background:var(--red-light);color:var(--red);"><i class="ti ti-lock" aria-hidden="true"></i></div>
+          <div class="stat-icon" id="account-status-icon-wrap" style="background:var(--red-light);color:var(--red);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
         </div>
         <div class="stat-value" id="account-status-value" style="color:var(--red);">Locked</div>
         <div class="stat-label" id="account-status-label">Account status &middot; clear fines to reactivate</div>
@@ -790,64 +790,18 @@
       <div>
         <div class="card">
           <div class="card-header">
-            <div class="card-title">Today's focus</div>
+            <div class="card-title" id="dashboard-focus-title">Today's focus</div>
           </div>
           <div style="margin-bottom:16px;">
-            <div style="font-size:15px;font-weight:600;margin-bottom:4px;">Practice &middot; 7v7 &middot; Turf Ground 2</div>
-            <div style="font-size:12.5px;color:var(--muted);">8:00 &ndash; 10:00 PM &middot; Theme: Set-piece defending</div>
+            <div style="font-size:15px;font-weight:600;margin-bottom:4px;" id="dashboard-focus-session-title">Practice &middot; 7v7 &middot; Turf Ground 2</div>
+            <div style="font-size:12.5px;color:var(--muted);" id="dashboard-focus-session-meta">8:00 &ndash; 10:00 PM &middot; Theme: Set-piece defending</div>
           </div>
-
-          <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.3px;margin-bottom:8px;">Warm-up</div>
-          <div class="focus-item" style="border-color:var(--coral);">
-            <i class="ti ti-flame" style="color:var(--coral);" aria-hidden="true"></i>
-            <div><div class="focus-desc">Dynamic stretching</div></div>
-            <span class="block-dur" style="margin-left:auto;">8 min</span>
-          </div>
-          <div class="focus-item" style="border-color:var(--coral);">
-            <i class="ti ti-flame" style="color:var(--coral);" aria-hidden="true"></i>
-            <div><div class="focus-desc">Rondo possession box</div></div>
-            <span class="block-dur" style="margin-left:auto;">10 min</span>
-          </div>
-          <div class="focus-item" style="border-color:var(--coral);">
-            <i class="ti ti-flame" style="color:var(--coral);" aria-hidden="true"></i>
-            <div><div class="focus-desc">Hand ball match</div></div>
-            <span class="block-dur" style="margin-left:auto;">7 min</span>
-          </div>
-
-          <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.3px;margin:14px 0 8px;">Drills</div>
-          <div class="focus-item" style="border-color:var(--blue);">
-            <i class="ti ti-target" style="color:var(--blue);" aria-hidden="true"></i>
-            <div><div class="focus-desc">Corner defending shape</div></div>
-            <span class="block-dur" style="margin-left:auto;">15 min</span>
-          </div>
-          <div class="focus-item" style="border-color:var(--blue);">
-            <i class="ti ti-target" style="color:var(--blue);" aria-hidden="true"></i>
-            <div><div class="focus-desc">Overlapping runs</div></div>
-            <span class="block-dur" style="margin-left:auto;">15 min</span>
-          </div>
-          <div class="focus-item" style="border-color:var(--blue);">
-            <i class="ti ti-target" style="color:var(--blue);" aria-hidden="true"></i>
-            <div><div class="focus-desc">Shooting drill</div></div>
-            <span class="block-dur" style="margin-left:auto;">12 min</span>
-          </div>
-
-          <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.3px;margin:14px 0 8px;">Game</div>
-          <div class="focus-item" style="border-color:var(--green);">
-            <i class="ti ti-ball-football" style="color:var(--green);" aria-hidden="true"></i>
-            <div><div class="focus-desc">7v7 &middot; goals only via header</div></div>
-            <span class="block-dur" style="margin-left:auto;">25 min</span>
-          </div>
-
-          <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.3px;margin:14px 0 8px;">Cool down</div>
-          <div class="focus-item" style="border-color:#7F77DD;">
-            <i class="ti ti-wind" style="color:#7F77DD;" aria-hidden="true"></i>
-            <div><div class="focus-desc">Static stretching and debrief</div></div>
-            <span class="block-dur" style="margin-left:auto;">10 min</span>
-          </div>
+          <div id="dashboard-today-focus"></div>
         </div>
 
         <div class="card">
           <div class="card-header"><div class="card-title">Pre-session check-in</div></div>
+          <div style="font-size:11.5px;color:var(--coral);font-weight:600;margin-bottom:10px;" id="pre-checkin-session-date">Checking in for: &mdash;</div>
           <div id="pre-checkin-form">
             <div style="font-size:12.5px;color:var(--muted);margin-bottom:12px;">How are you feeling ahead of tonight's session?</div>
             <div class="checkin-option-row">
@@ -877,8 +831,9 @@
 
         <div class="card">
           <div class="card-header"><div class="card-title">Post-session feedback</div></div>
+          <div style="font-size:11.5px;color:var(--coral);font-weight:600;margin-bottom:10px;" id="post-feedback-session-date">For session: &mdash;</div>
           <div id="post-feedback-form">
-            <div style="font-size:12.5px;color:var(--muted);margin-bottom:10px;">How was tonight's session?</div>
+            <div style="font-size:12.5px;color:var(--muted);margin-bottom:10px;">How was last session?</div>
             <div class="checkin-option-row">
               <button class="checkin-option-btn" onclick="selectSessionTag(this,'great')"><i class="ti ti-mood-smile" aria-hidden="true"></i>Great</button>
               <button class="checkin-option-btn" onclick="selectSessionTag(this,'average')"><i class="ti ti-mood-neutral" aria-hidden="true"></i>Average</button>
@@ -901,7 +856,7 @@
             <i class="ti ti-lock" aria-hidden="true"></i>
             <div>
               <div class="lock-banner-title">Feedback window closed</div>
-              <div class="lock-banner-sub">Post-session feedback can only be submitted on the day of the session &mdash; no backdated entries.</div>
+              <div class="lock-banner-sub">Feedback opens at 10 PM after the session and stays open for 24 hours &mdash; no backdated entries.</div>
             </div>
           </div>
         </div>
@@ -910,8 +865,8 @@
 
       <div>
         <div class="card">
-          <div class="card-header"><div class="card-title">Squad depth</div></div>
-          <div class="depth-grid">
+          <div class="card-header"><div class="card-title" id="squad-depth-title">Today's squad depth</div></div>
+          <div class="depth-grid" id="squad-depth-grid">
             <div class="depth-card"><div class="depth-count">2</div><div class="depth-label">GK</div></div>
             <div class="depth-card"><div class="depth-count">7</div><div class="depth-label">DEF</div></div>
             <div class="depth-card"><div class="depth-count">8</div><div class="depth-label">MID</div></div>
@@ -923,47 +878,13 @@
           <div class="card-header">
             <div class="card-title">Recent fines</div><span class="card-link" onclick="showPage('fines')">View all</span></div>
           <table>
-            <tbody>
-              <tr>
-                <td>
-                  <div class="player-cell"><div class="mini-avatar" style="background:var(--coral);">VS</div>
-                    <div>
-                      <div>Vikram Singh</div>
-                      <div style="font-size:11px;color:var(--muted);">Fine for no-show</div>
-                    </div>
-                  </div>
-                </td>
-                <td style="text-align:right;"><span class="badge badge-unpaid">&#8377;50</span></td>
-              </tr>
-              <tr>
-                <td>
-                  <div class="player-cell"><div class="mini-avatar" style="background:var(--blue);">KM</div>
-                    <div>
-                      <div>Karan Mehta</div>
-                      <div style="font-size:11px;color:var(--muted);">Fine for late arrival</div>
-                    </div>
-                  </div>
-                </td>
-                <td style="text-align:right;"><span class="badge badge-unpaid">&#8377;30</span></td>
-              </tr>
-              <tr>
-                <td>
-                  <div class="player-cell"><div class="mini-avatar" style="background:#5DCAA5;">AR</div>
-                    <div>
-                      <div>Arjun Rao</div>
-                      <div style="font-size:11px;color:var(--muted);">Fine for dress code</div>
-                    </div>
-                  </div>
-                </td>
-                <td style="text-align:right;"><span class="badge badge-pending">&#8377;30</span></td>
-              </tr>
-            </tbody>
+            <tbody id="dashboard-recent-fines-body"></tbody>
           </table>
         </div>
 
         <div class="card">
           <div class="card-header">
-            <div class="card-title">Upcoming sessions</div>
+            <div class="card-title">Upcoming event</div>
             <span class="card-link" onclick="showPage('schedule')">View schedule</span>
           </div>
           <div class="session-row">
@@ -1003,62 +924,7 @@
             <div class="card-title">Defaulter list</div>
           </div>
           <div style="font-size:12px;color:var(--muted);margin-bottom:12px;">Top 5 players by number of fine incidents</div>
-
-          <div class="defaulter-row">
-            <div class="defaulter-left">
-              <span class="defaulter-rank">1</span>
-              <div class="mini-avatar" style="background:var(--coral);">VS</div>
-              <div>Vikram Singh</div>
-            </div>
-            <div style="text-align:right;">
-              <div class="defaulter-count">6 incidents</div>
-              <div class="defaulter-count-sub">2 unpaid</div>
-            </div>
-          </div>
-          <div class="defaulter-row">
-            <div class="defaulter-left">
-              <span class="defaulter-rank">2</span>
-              <div class="mini-avatar" style="background:var(--blue);">KM</div>
-              <div>Karan Mehta</div>
-            </div>
-            <div style="text-align:right;">
-              <div class="defaulter-count">4 incidents</div>
-              <div class="defaulter-count-sub">1 unpaid</div>
-            </div>
-          </div>
-          <div class="defaulter-row">
-            <div class="defaulter-left">
-              <span class="defaulter-rank">3</span>
-              <div class="mini-avatar" style="background:#D4537E;">RP</div>
-              <div>Rahul Patel</div>
-            </div>
-            <div style="text-align:right;">
-              <div class="defaulter-count">3 incidents</div>
-              <div class="defaulter-count-sub">0 unpaid</div>
-            </div>
-          </div>
-          <div class="defaulter-row">
-            <div class="defaulter-left">
-              <span class="defaulter-rank">4</span>
-              <div class="mini-avatar" style="background:#5DCAA5;">AR</div>
-              <div>Arjun Rao</div>
-            </div>
-            <div style="text-align:right;">
-              <div class="defaulter-count">2 incidents</div>
-              <div class="defaulter-count-sub">1 pending</div>
-            </div>
-          </div>
-          <div class="defaulter-row">
-            <div class="defaulter-left">
-              <span class="defaulter-rank">5</span>
-              <div class="mini-avatar" style="background:#7F77DD;">NS</div>
-              <div>Nikhil Sharma</div>
-            </div>
-            <div style="text-align:right;">
-              <div class="defaulter-count">2 incidents</div>
-              <div class="defaulter-count-sub">0 unpaid</div>
-            </div>
-          </div>
+          <div id="defaulter-list-body"></div>
         </div>
       </div>
     </div>
@@ -1092,7 +958,7 @@
   <div class="page" id="page-schedule">
     <div class="page-header">
       <div>
-        <div class="page-title">Schedule</div>
+        <div class="page-title">Practice Schedule</div>
         <div class="page-sub">Practice sessions auto-generate every Tue &amp; Thu, 8&ndash;10 PM &middot; matches and one-off sessions are added from Focus setup</div>
       </div>
     </div>
@@ -1108,21 +974,12 @@
       </div>
     </div>
 
-    <div class="demo-toggle-row">
-      <i class="ti ti-clock" aria-hidden="true" style="color:var(--muted);"></i>
-      <span style="font-size:12.5px;color:var(--muted);">Session time lock (demo):</span>
-      <select id="lock-demo-select" onchange="setLockDemo(this.value)">
-        <option value="open">More than 2 hrs before session &middot; player can edit</option>
-        <option value="locked">Within 2 hrs of session &middot; locked for players</option>
-      </select>
-    </div>
-
     <div class="card">
       <div class="card-header">
         <div class="card-title">Practice &middot; 7v7 <span style="font-size:10px;font-weight:600;color:var(--muted);background:var(--panel);padding:2px 8px;border-radius:6px;margin-left:6px;">Auto-generated &middot; Tue</span></div>
         <span class="status-pill pill-confirmed" id="session-state-sess1">Scheduled</span>
       </div>
-      <div style="font-size:12.5px;color:var(--muted);margin-bottom:10px;">Tue, 18 Aug &middot; 8:00 &ndash; 10:00 PM &middot; Turf Ground 2 &middot; Theme: Set-piece defending</div>
+      <div style="font-size:12.5px;color:var(--muted);margin-bottom:10px;" id="sess1-meta">Tue, 18 Aug &middot; 8:00 &ndash; 10:00 PM &middot; Turf Ground 2 &middot; Theme: Set-piece defending</div>
       <div style="margin-bottom:14px;">
         <span class="card-link" style="color:var(--red);" onclick="cancelRecurringSession('sess1')" id="cancel-sess1-link"><i class="ti ti-calendar-x" aria-hidden="true"></i> Cancel this session &middot; coach only</span>
       </div>
@@ -1191,84 +1048,33 @@
       </div>
       <div style="font-size:12px;color:var(--muted);margin-bottom:14px;">Mark actual attendance at the ground &middot; overrides player-submitted availability &middot; drives fines automatically</div>
 
-      <div class="am-row">
-        <div class="am-left"><div class="mini-avatar" style="background:#D85A30;">AR</div>Arjun Rao</div>
-        <div style="display:flex;align-items:center;gap:8px;">
-          <select class="am-select" onchange="applyAmStatus('AR', this.value)">
-            <option value="present">Present</option>
-            <option value="late">Late arrival</option>
-            <option value="no-show">No-show</option>
-            <option value="dress-code">Present &middot; wrong dress code</option>
-          </select>
-          <span class="am-fine-tag" id="am-fine-AR" style="display:none;"></span>
+      <div style="display:flex;align-items:center;gap:12px;background:var(--panel);border-radius:10px;padding:10px 14px;margin-bottom:16px;flex-wrap:wrap;">
+        <div style="display:flex;align-items:center;gap:6px;">
+          <span style="font-size:12px;color:var(--muted);">In time:</span>
+          <input type="time" id="am-in-time-input" value="20:00" style="padding:5px 8px;border-radius:6px;border:1px solid var(--line);font-size:12.5px;">
+          <button class="btn" style="padding:5px 12px;font-size:12px;" onclick="updateInTime()">Update <span style="font-size:10px;color:var(--muted);">(admin only)</span></button>
         </div>
-      </div>
-      <div class="am-row">
-        <div class="am-left"><div class="mini-avatar" style="background:#378ADD;">VS</div>Vikram Singh</div>
-        <div style="display:flex;align-items:center;gap:8px;">
-          <select class="am-select" onchange="applyAmStatus('VS', this.value)">
-            <option value="present">Present</option>
-            <option value="late" selected>Late arrival</option>
-            <option value="no-show">No-show</option>
-            <option value="dress-code">Present &middot; wrong dress code</option>
-          </select>
-          <span class="am-fine-tag" id="am-fine-VS" style="background:var(--amber-light);color:var(--amber);">&#8377;30 fine</span>
-        </div>
-      </div>
-      <div class="am-row">
-        <div class="am-left"><div class="mini-avatar" style="background:#5DCAA5;">KM</div>Karan Mehta</div>
-        <div style="display:flex;align-items:center;gap:8px;">
-          <select class="am-select" onchange="applyAmStatus('KM', this.value)">
-            <option value="present" selected>Present</option>
-            <option value="late">Late arrival</option>
-            <option value="no-show">No-show</option>
-            <option value="dress-code">Present &middot; wrong dress code</option>
-          </select>
-          <span class="am-fine-tag" id="am-fine-KM" style="display:none;"></span>
-        </div>
-      </div>
-      <div class="am-row">
-        <div class="am-left"><div class="mini-avatar" style="background:#7F77DD;">NS</div>Nikhil Sharma</div>
-        <div style="display:flex;align-items:center;gap:8px;">
-          <select class="am-select" onchange="applyAmStatus('NS', this.value)">
-            <option value="present">Present</option>
-            <option value="late">Late arrival</option>
-            <option value="no-show">No-show</option>
-            <option value="dress-code" selected>Present &middot; wrong dress code</option>
-          </select>
-          <span class="am-fine-tag" id="am-fine-NS" style="background:var(--amber-light);color:var(--amber);">&#8377;30 fine</span>
-        </div>
-      </div>
-      <div class="am-row">
-        <div class="am-left"><div class="mini-avatar" style="background:#D4537E;">RP</div>Rahul Patel</div>
-        <div style="display:flex;align-items:center;gap:8px;">
-          <select class="am-select" onchange="applyAmStatus('RP', this.value)">
-            <option value="present">Present</option>
-            <option value="late">Late arrival</option>
-            <option value="no-show" selected>No-show</option>
-            <option value="dress-code">Present &middot; wrong dress code</option>
-          </select>
-          <span class="am-fine-tag" id="am-fine-RP" style="background:var(--red-light);color:var(--red);">&#8377;50 fine</span>
-        </div>
+        <div style="font-size:12px;color:var(--muted);margin-left:auto;">Late cutoff: <strong id="am-late-cutoff-display" style="color:var(--ink);">8:15 PM</strong> <span style="font-size:11px;">(15 min buffer)</span></div>
       </div>
 
-      <button class="btn btn-primary" style="margin-top:14px;">Save attendance</button>
+      <div id="attendance-manager-rows"></div>
+
+      <button class="btn btn-primary" style="margin-top:14px;" onclick="saveAttendance()">Save attendance</button>
     </div>
 
     <div class="card">
-      <div class="card-header">
-        <div class="card-title">Practice &middot; Regular <span style="font-size:10px;font-weight:600;color:var(--muted);background:var(--panel);padding:2px 8px;border-radius:6px;margin-left:6px;">Auto-generated &middot; Thu</span></div>
-        <span class="status-pill pill-cancelled" id="status-sess-thu">Cancelled</span>
-      </div>
-      <div style="font-size:12.5px;color:var(--muted);margin-bottom:10px;" id="sess-thu-meta">Thu, 20 Aug &middot; 8:00 &ndash; 10:00 PM &middot; Ground maintenance &middot; No session</div>
-      <span class="card-link" style="color:var(--green);" onclick="cancelRecurringSession('sess-thu')" id="cancel-sess-thu-link"><i class="ti ti-calendar-check" aria-hidden="true"></i> Reinstate this session &middot; coach only</span>
+      <div class="card-header"><div class="card-title">Upcoming sessions</div></div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:14px;">Next 2 scheduled sessions &middot; only the very next one is open for marking availability above</div>
+      <div id="upcoming-sessions-list"></div>
     </div>
 
     <div class="card">
       <div class="card-header"><div class="card-title">Past sessions</div></div>
       <div style="font-size:12px;color:var(--muted);margin-bottom:14px;">Pick a date to see that session's details and attendance</div>
       <div class="date-lookup-row">
-        <input type="date" id="past-date-input" max="2026-08-20" value="2026-08-14" onchange="lookupPastSession()">
+        <button class="btn" style="padding:8px 12px;display:flex;align-items:center;gap:4px;" onclick="stepPastSession(-1)" title="Previous session"><i class="ti ti-chevron-left" aria-hidden="true"></i><span style="font-size:12px;">Prev</span></button>
+        <input type="date" id="past-date-input" onchange="lookupPastSession()">
+        <button class="btn" style="padding:8px 12px;display:flex;align-items:center;gap:4px;" onclick="stepPastSession(1)" title="Next session"><span style="font-size:12px;">Next</span><i class="ti ti-chevron-right" aria-hidden="true"></i></button>
         <button class="btn" onclick="lookupPastSession()">View</button>
       </div>
       <div id="past-detail-result"></div>
@@ -1276,33 +1082,7 @@
   </div>
 
   <script>
-    const pastSessions = {
-      '2026-08-14': { title: 'Practice &middot; 5v5', meta: 'Fri, 14 Aug &middot; 8:00 &ndash; 9:30 PM &middot; Turf Ground 2',
-        present: ['Dev Prakash','Karan Mehta','Arjun Rao','Nikhil Sharma','Rahul Patel','Amit Kapoor','Suresh Pillai','Manoj Joshi','Tarun Rana','Harsh Kohli','Yash Bhatt','Sanjay Mishra','Ramesh Sinha','Prakash Thakur','Gaurav Desai','Imran Sheikh'],
-        late: ['Vikram Singh'], absent: ['Jatin Verma'],
-        myCheckin: { feeling: 'Running late', injured: false },
-        myFeedback: { rating: 3, tag: 'Average', comment: 'Bit gassed from the late arrival, tough first half.' } },
-      '2026-08-11': { title: 'Practice &middot; Regular', meta: 'Tue, 11 Aug &middot; 8:00 &ndash; 10:00 PM &middot; Turf Ground 2',
-        present: ['Dev Prakash','Arjun Rao','Nikhil Sharma','Rahul Patel','Amit Kapoor','Suresh Pillai','Manoj Joshi','Tarun Rana','Harsh Kohli','Yash Bhatt','Sanjay Mishra','Ramesh Sinha','Gaurav Desai','Imran Sheikh'],
-        late: ['Vikram Singh','Karan Mehta','Prakash Thakur'], absent: ['Jatin Verma'],
-        myCheckin: { feeling: 'Managing', injured: false },
-        myFeedback: { rating: 4, tag: 'Great', comment: 'Good sharpness in the finishing drills.' } },
-      '2026-08-08': { title: 'Match vs Titans FC', meta: 'Sat, 8 Aug &middot; 5:00 PM &middot; City Sports Complex',
-        present: ['Dev Prakash','Vikram Singh','Karan Mehta','Nikhil Sharma','Rahul Patel','Amit Kapoor','Suresh Pillai','Manoj Joshi','Tarun Rana','Harsh Kohli','Yash Bhatt','Sanjay Mishra','Ramesh Sinha','Prakash Thakur','Gaurav Desai','Imran Sheikh','Jatin Verma'],
-        late: [], absent: ['Arjun Rao'],
-        myCheckin: { feeling: 'Fresh', injured: false },
-        myFeedback: { rating: 5, tag: 'Great', comment: 'Great win, defense held up well under pressure.' } },
-      '2026-08-06': { title: 'Practice &middot; Regular', meta: 'Thu, 6 Aug &middot; 8:00 &ndash; 10:00 PM &middot; Turf Ground 2',
-        present: ['Dev Prakash','Vikram Singh','Karan Mehta','Arjun Rao','Nikhil Sharma','Rahul Patel','Amit Kapoor','Suresh Pillai','Manoj Joshi','Tarun Rana','Harsh Kohli','Yash Bhatt','Sanjay Mishra','Ramesh Sinha','Prakash Thakur','Gaurav Desai','Imran Sheikh','Jatin Verma'],
-        late: [], absent: [],
-        myCheckin: { feeling: 'Fresh', injured: false },
-        myFeedback: { rating: 4, tag: 'Great', comment: '' } },
-      '2026-08-04': { title: 'Practice &middot; 7v7', meta: 'Tue, 4 Aug &middot; 8:00 &ndash; 10:00 PM &middot; Turf Ground 2',
-        present: ['Dev Prakash','Vikram Singh','Arjun Rao','Nikhil Sharma','Amit Kapoor','Suresh Pillai','Manoj Joshi','Tarun Rana','Harsh Kohli','Sanjay Mishra','Ramesh Sinha','Prakash Thakur','Gaurav Desai','Imran Sheikh','Jatin Verma'],
-        late: ['Karan Mehta','Yash Bhatt'], absent: ['Rahul Patel'],
-        myCheckin: { feeling: 'Tired', injured: true },
-        myFeedback: { rating: 2, tag: 'Tough', comment: 'Knee felt sore throughout, mentioned to coach.' } }
-    };
+    const pastSessions = {};
 
     function nameListHtml(names, colorVar) {
       if (!names.length) return '<div style="font-size:12px;color:var(--faint);">None</div>';
@@ -1310,6 +1090,23 @@
         const initials = n.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
         return `<div class="team-split-slot"><div class="mini-avatar" style="background:${colorVar};">${initials}</div>${n}</div>`;
       }).join('');
+    }
+
+    function stepPastSession(direction) {
+      const dateEl = document.getElementById('past-date-input');
+      if (!dateEl) return;
+      const sortedDates = Object.keys(pastSessions).sort(); // ascending
+      const currentIdx = sortedDates.indexOf(dateEl.value);
+      let newIdx;
+      if (currentIdx === -1) {
+        // current value isn't a recorded session date; jump to nearest edge
+        newIdx = direction < 0 ? sortedDates.length - 1 : 0;
+      } else {
+        newIdx = currentIdx + direction;
+      }
+      if (newIdx < 0 || newIdx >= sortedDates.length) return; // no further sessions that way
+      dateEl.value = sortedDates[newIdx];
+      lookupPastSession();
     }
 
     function lookupPastSession() {
@@ -1366,35 +1163,23 @@
 
     lookupPastSession();
 
-    const pastMatches = {
-      '2026-08-08': {
-        opponent: 'Titans FC', opponentTag: 'TFC', venue: 'City Sports Complex', time: '5:00 PM',
-        ourScore: 3, theirScore: 1,
-        scorers: [['Arjun Rao', 2], ['Rahul Patel', 1]],
-        lineup: [
-          ['GK','Dev Prakash','#EF9F27','DP'], ['DEF','Vikram Singh','#378ADD','VS'], ['MID','Karan Mehta','#5DCAA5','KM'],
-          ['MID','Nikhil Sharma','#7F77DD','NS'], ['FWD','Arjun Rao','#D85A30','AR'], ['FWD','Rahul Patel','#D4537E','RP']
-        ]
-      },
-      '2026-07-25': {
-        opponent: 'Riverside United', opponentTag: 'RIV', venue: 'Riverside Ground', time: '4:30 PM',
-        ourScore: 2, theirScore: 2,
-        scorers: [['Rahul Patel', 1], ['Nikhil Sharma', 1]],
-        lineup: [
-          ['GK','Dev Prakash','#EF9F27','DP'], ['DEF','Amit Kapoor','#4FB08C','AK'], ['MID','Karan Mehta','#5DCAA5','KM'],
-          ['MID','Nikhil Sharma','#7F77DD','NS'], ['FWD','Rahul Patel','#D4537E','RP'], ['FWD','Arjun Rao','#D85A30','AR']
-        ]
-      },
-      '2026-07-11': {
-        opponent: 'Coastal FC', opponentTag: 'CFC', venue: 'Turf Ground 2', time: '6:00 PM',
-        ourScore: 4, theirScore: 0,
-        scorers: [['Arjun Rao', 3], ['Karan Mehta', 1]],
-        lineup: [
-          ['GK','Sanjay Mishra','#B84A9E','SM'], ['DEF','Vikram Singh','#378ADD','VS'], ['MID','Karan Mehta','#5DCAA5','KM'],
-          ['MID','Nikhil Sharma','#7F77DD','NS'], ['FWD','Arjun Rao','#D85A30','AR'], ['FWD','Rahul Patel','#D4537E','RP']
-        ]
+    const pastMatches = {};
+
+    function stepPastMatch(direction) {
+      const dateEl = document.getElementById('past-match-date-input');
+      if (!dateEl) return;
+      const sortedDates = Object.keys(pastMatches).sort();
+      const currentIdx = sortedDates.indexOf(dateEl.value);
+      let newIdx;
+      if (currentIdx === -1) {
+        newIdx = direction < 0 ? sortedDates.length - 1 : 0;
+      } else {
+        newIdx = currentIdx + direction;
       }
-    };
+      if (newIdx < 0 || newIdx >= sortedDates.length) return;
+      dateEl.value = sortedDates[newIdx];
+      lookupPastMatch();
+    }
 
     function lookupPastMatch() {
       const dateEl = document.getElementById('past-match-date-input');
@@ -1521,7 +1306,7 @@
         <div class="page-title">Fines</div>
         <div class="page-sub">Track and settle player fines</div>
       </div>
-      <button class="btn btn-primary">Record fine</button>
+      <button class="btn btn-primary" onclick="openRecordFineModal()">Record fine</button>
     </div>
 
     <div class="stat-grid" style="grid-template-columns:repeat(5,1fr);">
@@ -1530,7 +1315,7 @@
         <div class="stat-label">Unpaid</div>
       </div>
       <div class="stat-card">
-        <div class="stat-value" style="color:var(--amber);">&#8377;60</div>
+        <div class="stat-value" style="color:var(--amber);" id="fines-pending-confirmation">&#8377;0</div>
         <div class="stat-label">Pending confirmation</div>
       </div>
       <div class="stat-card">
@@ -1560,20 +1345,7 @@
       <div class="card-header"><div class="card-title">Recently settled</div></div>
       <table>
         <thead><tr><th>Player</th><th>Reason</th><th>Date</th><th style="text-align:right;">Amount</th><th style="text-align:right;">Status</th></tr></thead>
-        <tbody>
-          <tr>
-            <td><div class="player-cell"><div class="mini-avatar" style="background:#7F77DD;">NS</div>Nikhil Sharma</div></td>
-            <td>Informed absence</td><td>Aug 6</td>
-            <td style="text-align:right;font-weight:600;color:var(--green);">&#8377;30</td>
-            <td style="text-align:right;"><span class="badge badge-paid">Paid</span></td>
-          </tr>
-          <tr>
-            <td><div class="player-cell"><div class="mini-avatar" style="background:#D4537E;">RP</div>Rahul Patel</div></td>
-            <td>No-show</td><td>Aug 4</td>
-            <td style="text-align:right;font-weight:600;color:var(--green);">&#8377;50</td>
-            <td style="text-align:right;"><span class="badge badge-paid">Paid</span></td>
-          </tr>
-        </tbody>
+        <tbody id="recently-settled-tbody"></tbody>
       </table>
     </div>
   </div>
@@ -1758,14 +1530,14 @@
     <div class="stat-grid" style="grid-template-columns:repeat(6,1fr);">
       <div class="stat-card">
         <div class="stat-top">
-          <div class="stat-icon" style="background:#e6f1fb;color:var(--blue);"><i class="ti ti-shirt-sport" aria-hidden="true"></i></div>
+          <div class="stat-icon" style="background:#e6f1fb;color:var(--blue);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 9h16M8 3v3M16 3v3"/></svg></div>
         </div>
         <div class="stat-value">14</div>
         <div class="stat-label">Matches played</div>
       </div>
       <div class="stat-card">
         <div class="stat-top">
-          <div class="stat-icon" style="background:var(--green-light);color:var(--green);"><i class="ti ti-trophy" aria-hidden="true"></i></div>
+          <div class="stat-icon" style="background:var(--green-light);color:var(--green);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 4h8v4a4 4 0 0 1-8 0V4z"/><path d="M8 5H5.5A2 2 0 0 0 7 9M16 5h2.5A2 2 0 0 1 16 9"/><path d="M12 12v3"/><path d="M9.5 19h5M10 16h4v3h-4z"/></svg></div>
           <span class="stat-delta" style="color:var(--green);background:var(--green-light);">64%</span>
         </div>
         <div class="stat-value" style="color:var(--green);">9</div>
@@ -1773,7 +1545,7 @@
       </div>
       <div class="stat-card">
         <div class="stat-top">
-          <div class="stat-icon" style="background:var(--amber-light);color:var(--amber);"><i class="ti ti-equal" aria-hidden="true"></i></div>
+          <div class="stat-icon" style="background:var(--amber-light);color:var(--amber);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 9h14M5 15h14"/></svg></div>
           <span class="stat-delta" style="color:var(--amber);background:var(--amber-light);">14%</span>
         </div>
         <div class="stat-value" style="color:var(--amber);">2</div>
@@ -1781,7 +1553,7 @@
       </div>
       <div class="stat-card">
         <div class="stat-top">
-          <div class="stat-icon" style="background:var(--red-light);color:var(--red);"><i class="ti ti-x" aria-hidden="true"></i></div>
+          <div class="stat-icon" style="background:var(--red-light);color:var(--red);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></div>
           <span class="stat-delta" style="color:var(--red);background:var(--red-light);">21%</span>
         </div>
         <div class="stat-value" style="color:var(--red);">3</div>
@@ -1789,14 +1561,14 @@
       </div>
       <div class="stat-card">
         <div class="stat-top">
-          <div class="stat-icon" style="background:var(--coral-light);color:var(--coral);"><i class="ti ti-ball-football" aria-hidden="true"></i></div>
+          <div class="stat-icon" style="background:var(--coral-light);color:var(--coral);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8.5l2.5 1.8-1 3h-3l-1-3z"/><path d="M12 8.5V6M9.5 10.3L7 9.3M14.5 10.3L17 9.3M10.5 13.3L8.5 16M13.5 13.3L15.5 16"/></svg></div>
         </div>
         <div class="stat-value">2.6</div>
         <div class="stat-label">Goals per match</div>
       </div>
       <div class="stat-card">
         <div class="stat-top">
-          <div class="stat-icon" style="background:#f2e9ff;color:#7F56D9;"><i class="ti ti-shield-check" aria-hidden="true"></i></div>
+          <div class="stat-icon" style="background:#f2e9ff;color:#7F56D9;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6z"/><path d="M9 12l2 2 4-4"/></svg></div>
           <span class="stat-delta" style="color:var(--muted);background:var(--panel);">50%</span>
         </div>
         <div class="stat-value">7</div>
@@ -1879,7 +1651,9 @@
         <div class="card-header"><div class="card-title">Past matches</div></div>
         <div style="font-size:12px;color:var(--muted);margin-bottom:14px;">Pick a date to see that match's result, scorers, and lineup</div>
         <div class="date-lookup-row">
-          <input type="date" id="past-match-date-input" max="2026-08-20" value="2026-08-08" onchange="lookupPastMatch()">
+          <button class="btn" style="padding:8px 12px;display:flex;align-items:center;gap:4px;" onclick="stepPastMatch(-1)" title="Previous match"><i class="ti ti-chevron-left" aria-hidden="true"></i><span style="font-size:12px;">Prev</span></button>
+          <input type="date" id="past-match-date-input" onchange="lookupPastMatch()">
+          <button class="btn" style="padding:8px 12px;display:flex;align-items:center;gap:4px;" onclick="stepPastMatch(1)" title="Next match"><span style="font-size:12px;">Next</span><i class="ti ti-chevron-right" aria-hidden="true"></i></button>
           <button class="btn" onclick="lookupPastMatch()">View</button>
         </div>
         <div id="past-match-result"></div>
@@ -1951,6 +1725,41 @@
       <button class="btn" style="padding:7px 14px;font-size:12px;" onclick="addPracticeScorerRow()"><i class="ti ti-plus" aria-hidden="true"></i> Add scorer</button>
 
       <button class="btn btn-primary" style="margin-top:16px;display:block;" onclick="savePracticeSummary()"><i class="ti ti-device-floppy" aria-hidden="true"></i> Save summary</button>
+    </div>
+
+    <div class="card" style="margin-bottom:20px;">
+      <div class="card-header">
+        <div class="card-title">Record match result</div>
+      </div>
+      <div style="font-size:12.5px;color:var(--muted);margin-bottom:14px;">Pick a scheduled match and log the final result so goals and clean sheets count toward performance rating.</div>
+
+      <div class="form-group" style="margin-bottom:14px;">
+        <label class="form-label">Match</label>
+        <select class="form-select" id="match-result-select" onchange="onMatchResultSelected()">
+          <option value="">Loading scheduled matches&hellip;</option>
+        </select>
+        <div id="match-opponent-badge-preview" style="margin-top:8px;display:none;align-items:center;gap:8px;">
+          <span id="match-opponent-badge-tag" class="score-badge" style="width:34px;height:34px;font-size:11px;"></span>
+          <span id="match-opponent-badge-name" style="font-size:12.5px;color:var(--muted);"></span>
+        </div>
+      </div>
+
+      <div class="form-row-2" style="margin-bottom:14px;">
+        <div class="form-group">
+          <label class="form-label">Our score</label>
+          <input type="number" class="form-input" id="match-our-score" min="0" value="0">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Their score</label>
+          <input type="number" class="form-input" id="match-their-score" min="0" value="0">
+        </div>
+      </div>
+
+      <div style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.3px;margin-bottom:8px;">Scorers</div>
+      <div id="match-scorers-list" style="margin-bottom:10px;"></div>
+      <button class="btn" style="padding:7px 14px;font-size:12px;" onclick="addMatchScorerRow()"><i class="ti ti-plus" aria-hidden="true"></i> Add scorer</button>
+
+      <button class="btn btn-primary" style="margin-top:16px;display:block;" onclick="saveMatchResult()"><i class="ti ti-device-floppy" aria-hidden="true"></i> Save result</button>
     </div>
 
     <div class="grid-2">
@@ -2064,9 +1873,6 @@
         <div class="profile-name" id="profile-name">Arjun Rao</div>
         <div class="profile-meta" id="profile-meta">Forward &middot; Jersey unassigned &middot; Joined Jan 2025</div>
       </div>
-      <div style="margin-left:auto;display:flex;gap:10px;">
-        <button class="btn" id="profile-message-btn"><i class="ti ti-message-circle" aria-hidden="true"></i> Message</button>
-      </div>
     </div>
 
     <div class="profile-stat-grid" style="grid-template-columns:repeat(5,1fr);">
@@ -2171,11 +1977,14 @@
 
     <div class="points-card" id="points-card">
       <div>
-        <span id="owed-stat-tile" style="display:block;font-size:12.5px;font-weight:600;color:var(--red);margin-bottom:4px;">&#8377;<span id="profile-owed">0</span> owed</span>
+        <div id="owed-stat-tile" style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+          <span style="font-size:15px;font-weight:700;color:var(--ink);">Fine Pending:</span>
+          <span style="background:#7A1F2B;color:#fff;font-size:18px;font-weight:700;padding:4px 14px;border-radius:999px;">&#8377;<span id="profile-owed">0</span></span>
+        </div>
         <div class="points-label">Points can be redeemed to clear fines &middot; balance resets to zero once used</div>
-        <div class="points-rules">+10 attending a session &middot; +10 selected to play a match &middot; &minus;4 no-show &middot; &minus;2 wrong dress code &middot; &minus;2 late arrival</div>
+        <div class="points-rules">+10 attending a session &middot; +10 selected to play a match &middot; &minus;4 no-show &middot; &minus;2 no bibs &middot; &minus;2 late arrival</div>
       </div>
-      <button class="btn btn-primary" id="redeem-points-btn" onclick="redeemPoints()">Redeem points to clear fine</button>
+      <button class="btn" id="redeem-points-btn" onclick="redeemPoints()" style="background:var(--green);color:#fff;border-color:var(--green);">Redeem points to clear fine</button>
     </div>
 
     <div class="grid-2">
@@ -2253,6 +2062,80 @@
 <!-- NEW MESSAGE MODAL -->
 <!-- NEW SESSION MODAL (ad-hoc, non Tue/Thu) -->
 <!-- ADD PLAYER MODAL -->
+<!-- EDIT FOCUS BLOCK MODAL -->
+<div class="modal-overlay" id="edit-block-modal">
+  <div class="modal-box" style="max-width:420px;">
+    <div class="modal-header">
+      <div class="modal-title">Edit block</div>
+      <button class="modal-close" onclick="closeEditBlockModal()"><i class="ti ti-x" aria-hidden="true"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Title</label>
+        <input type="text" class="form-input" id="edit-block-title">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Duration</label>
+        <input type="text" class="form-input" id="edit-block-duration" placeholder="e.g. 8 min">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Description</label>
+        <textarea class="form-input" id="edit-block-description" rows="3" style="resize:vertical;"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeEditBlockModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveEditBlock()">Save changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- RECORD FINE MODAL -->
+<!-- DELETE PLAYER CONFIRMATION MODAL -->
+<div class="modal-overlay" id="delete-player-modal">
+  <div class="modal-box" style="max-width:380px;">
+    <div class="modal-header">
+      <div class="modal-title">Remove player</div>
+      <button class="modal-close" onclick="closeDeletePlayerModal()"><i class="ti ti-x" aria-hidden="true"></i></button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:13px;color:var(--ink);margin:0;">Remove <strong id="delete-player-name">this player</strong> from the squad? This cannot be undone &mdash; their profile, fines, and history will be permanently deleted.</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeDeletePlayerModal()">Cancel</button>
+      <button class="btn" style="background:var(--red);color:#fff;border-color:var(--red);" onclick="deletePlayerConfirmed()">Remove player</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="record-fine-modal">
+  <div class="modal-box" style="max-width:420px;">
+    <div class="modal-header">
+      <div class="modal-title">Record fine</div>
+      <button class="modal-close" onclick="closeRecordFineModal()"><i class="ti ti-x" aria-hidden="true"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Player</label>
+        <select class="form-select" id="record-fine-player"></select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Reason</label>
+        <input type="text" class="form-input" id="record-fine-reason" placeholder="e.g. Equipment damage">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Amount (&#8377;)</label>
+        <input type="number" class="form-input" id="record-fine-amount" min="1" placeholder="e.g. 50">
+      </div>
+      <div id="record-fine-error" style="display:none;color:var(--red);font-size:12px;margin-top:-6px;"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeRecordFineModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="submitRecordFine()">Record fine</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="add-player-modal">
   <div class="modal-box" style="max-width:480px;">
     <div class="modal-header">
@@ -2373,18 +2256,24 @@
     <div class="modal-body">
 
       <div class="section-divider">Opponent details</div>
-      <div class="form-group">
-        <label class="form-label">Opponent team name</label>
-        <input type="text" class="form-input" placeholder="e.g. Titans FC">
+      <div class="form-row-2">
+        <div class="form-group">
+          <label class="form-label">Opponent team name</label>
+          <input type="text" class="form-input" id="new-match-opponent" placeholder="e.g. Titans FC" oninput="autoFillOpponentTag()">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Short name / tag <span style="font-size:10px;color:var(--muted);">(auto, editable)</span></label>
+          <input type="text" class="form-input" id="new-match-opponent-tag" maxlength="4" placeholder="e.g. TFC" oninput="this.dataset.userEdited='1'">
+        </div>
       </div>
       <div class="form-row-2">
         <div class="form-group">
           <label class="form-label">Opponent contact person</label>
-          <input type="text" class="form-input" placeholder="Name">
+          <input type="text" class="form-input" id="new-match-contact-name" placeholder="Name">
         </div>
         <div class="form-group">
           <label class="form-label">Contact number</label>
-          <input type="text" class="form-input" placeholder="Phone number">
+          <input type="text" class="form-input" id="new-match-contact-phone" placeholder="Phone number">
         </div>
       </div>
 
@@ -2392,15 +2281,15 @@
       <div class="form-row-3">
         <div class="form-group">
           <label class="form-label">Date</label>
-          <input type="date" class="form-input">
+          <input type="date" class="form-input" id="new-match-date">
         </div>
         <div class="form-group">
           <label class="form-label">Kickoff time</label>
-          <input type="time" class="form-input" value="17:00">
+          <input type="time" class="form-input" id="new-match-time" value="17:00">
         </div>
         <div class="form-group">
           <label class="form-label">Duration</label>
-          <select class="form-select">
+          <select class="form-select" id="new-match-duration">
             <option>60 min</option>
             <option>70 min</option>
             <option selected>90 min</option>
@@ -2410,7 +2299,7 @@
       </div>
       <div class="form-group">
         <label class="form-label">Venue</label>
-        <input type="text" class="form-input" placeholder="e.g. City Sports Complex">
+        <input type="text" class="form-input" id="new-match-venue" placeholder="e.g. City Sports Complex">
       </div>
 
       <div class="section-divider">Match format</div>
@@ -2441,12 +2330,80 @@
     </div>
     <div class="modal-footer">
       <button class="btn" onclick="closeNewMatchModal()">Cancel</button>
-      <button class="btn btn-primary" onclick="closeNewMatchModal()">Create match</button>
+      <button class="btn btn-primary" onclick="submitNewMatch()">Create match</button>
     </div>
   </div>
 </div>
 
 <script>
+  // --- Session date helpers: practice runs recurring Tue/Thu, 8-10 PM ---
+  // Placed at the very top of this script block since renderFocusBlocks/renderDashboardTodayFocus
+  // (below) run at page load and need these immediately.
+  function isSameDate(a, b) {
+    return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+  }
+
+  function getNextSessionDate() {
+    const d = new Date();
+    d.setHours(0, 0, 0, 0);
+    for (let i = 0; i < 14; i++) {
+      const candidate = new Date(d);
+      candidate.setDate(d.getDate() + i);
+      if (candidate.getDay() === 2 || candidate.getDay() === 4) return candidate;
+    }
+    return d;
+  }
+
+  function getLastSessionDate() {
+    const now = new Date();
+    const d = new Date(now);
+    d.setHours(0, 0, 0, 0);
+    const isSessionDay = (d.getDay() === 2 || d.getDay() === 4);
+    if (isSessionDay && now.getHours() < 22) {
+      d.setDate(d.getDate() - 1);
+    }
+    while (!(d.getDay() === 2 || d.getDay() === 4)) {
+      d.setDate(d.getDate() - 1);
+    }
+    return d;
+  }
+
+  function isPostFeedbackWindowOpen() {
+    const last = getLastSessionDate();
+    const openFrom = new Date(last);
+    openFrom.setHours(22, 0, 0, 0);
+    const closeAt = new Date(openFrom);
+    closeAt.setDate(closeAt.getDate() + 1);
+    const now = new Date();
+    return now >= openFrom && now < closeAt;
+  }
+
+  function getSessionStartTime() {
+    const nextDate = getNextSessionDate();
+    const [h, m] = (typeof sessionInTime !== 'undefined' ? sessionInTime : '20:00').split(':').map(Number);
+    const start = new Date(nextDate);
+    start.setHours(h, m, 0, 0);
+    return start;
+  }
+
+  function isPreCheckinWindowOpen() {
+    // Attendance confirmation closes 4 hours before the session starts.
+    const cutoff = new Date(getSessionStartTime());
+    cutoff.setHours(cutoff.getHours() - 4);
+    return new Date() < cutoff;
+  }
+
+  function isAvailabilityLockActive() {
+    // Players can no longer edit their availability within 2 hours of the session.
+    const cutoff = new Date(getSessionStartTime());
+    cutoff.setHours(cutoff.getHours() - 2);
+    return new Date() >= cutoff;
+  }
+
+  function formatSessionDate(d) {
+    return d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
+  }
+
   function openAddPlayerModal() {
     document.getElementById('add-player-modal').classList.add('open');
   }
@@ -2514,10 +2471,27 @@
     squadOrder.push(key);
     squadColors[key] = color;
 
+    if (typeof supabaseClient !== 'undefined') {
+      supabaseClient.from('players').insert({
+        name: name, phone: phone, position: position, initials: initials, color: color,
+        status: 'Active', points: 0, points_earned: 0, points_redeemed: 0, is_admin: false
+      }).select('id').single().then(({ data, error }) => {
+        if (error) console.error('Failed to save new player:', error);
+        else if (data && playerData[key]) playerData[key].supabaseId = data.id;
+      });
+    }
+
     closeAddPlayerModal();
     if (typeof renderFocusSplitList === 'function') renderFocusSplitList();
     if (typeof renderAdminSquadGrid === 'function') renderAdminSquadGrid();
     if (typeof renderSquadPlayerGrid === 'function') renderSquadPlayerGrid();
+    if (typeof renderAttendanceManager === 'function') renderAttendanceManager();
+    if (typeof renderSquadDepth === 'function') renderSquadDepth();
+    if (typeof renderTeamOverviewStats === 'function') renderTeamOverviewStats();
+    if (typeof renderDefaulterList === 'function') renderDefaulterList();
+    if (typeof renderDashboardRecentFines === 'function') renderDashboardRecentFines();
+    if (typeof renderPendingConfirmationTile === 'function') renderPendingConfirmationTile();
+    if (typeof renderRecentlySettled === 'function') renderRecentlySettled();
 
     const banner = document.createElement('div');
     banner.style.cssText = 'position:fixed;top:24px;left:50%;transform:translateX(-50%);background:var(--green);color:#fff;padding:12px 20px;border-radius:10px;font-size:13px;font-weight:600;z-index:200;box-shadow:0 8px 24px rgba(0,0,0,0.2);';
@@ -2587,10 +2561,69 @@
 
   function openNewMatchModal() {
     document.getElementById('new-match-modal').classList.add('open');
+    const opponentInput = document.getElementById('new-match-opponent');
+    const tagInput = document.getElementById('new-match-opponent-tag');
+    if (opponentInput) opponentInput.value = '';
+    if (tagInput) { tagInput.value = ''; delete tagInput.dataset.userEdited; }
   }
+  function generateOpponentTag(name) {
+    const words = name.trim().split(/\s+/).filter(Boolean);
+    if (!words.length) return '';
+    if (words.length === 1) return words[0].slice(0, 3).toUpperCase();
+    return words.map(w => w[0]).join('').slice(0, 4).toUpperCase();
+  }
+
+  function autoFillOpponentTag() {
+    const nameInput = document.getElementById('new-match-opponent');
+    const tagInput = document.getElementById('new-match-opponent-tag');
+    if (!nameInput || !tagInput) return;
+    // Only auto-fill if the tag hasn't been manually edited away from the last auto-suggestion
+    if (!tagInput.dataset.userEdited) {
+      tagInput.value = generateOpponentTag(nameInput.value);
+    }
+  }
+
   function closeNewMatchModal() {
     document.getElementById('new-match-modal').classList.remove('open');
   }
+
+  async function submitNewMatch() {
+    const opponent = document.getElementById('new-match-opponent').value.trim();
+    const opponentTagInput = document.getElementById('new-match-opponent-tag');
+    const opponentTag = (opponentTagInput.value.trim() || generateOpponentTag(opponent));
+    const date = document.getElementById('new-match-date').value;
+    const time = document.getElementById('new-match-time').value;
+    const venue = document.getElementById('new-match-venue').value.trim();
+
+    if (!opponent || !date) {
+      alert('Opponent name and date are required.');
+      return;
+    }
+
+    const title = 'Match vs ' + opponent;
+
+    if (typeof supabaseClient !== 'undefined') {
+      try {
+        const { error } = await supabaseClient.from('sessions').insert({
+          session_type: 'match', session_date: date, title: title, venue: venue || null,
+          status: 'scheduled', opponent: opponent, opponent_tag: opponentTag
+        });
+        if (error) throw error;
+      } catch (e) {
+        console.error('Failed to create match:', e);
+        alert('Could not save the match \u2014 check your connection and try again.');
+        return;
+      }
+    }
+
+    closeNewMatchModal();
+    const banner = document.createElement('div');
+    banner.style.cssText = 'position:fixed;top:24px;left:50%;transform:translateX(-50%);background:var(--green);color:#fff;padding:12px 20px;border-radius:10px;font-size:13px;font-weight:600;z-index:200;box-shadow:0 8px 24px rgba(0,0,0,0.2);';
+    banner.textContent = 'Match scheduled \u00B7 ' + title + ' \u00B7 ' + date + (time ? ' ' + time : '') + '.';
+    document.body.appendChild(banner);
+    setTimeout(() => banner.remove(), 3500);
+  }
+
   function selectNewMatchFormat(el) {
     document.querySelectorAll('#new-match-format-row .format-chip').forEach(c => c.classList.remove('active'));
     el.classList.add('active');
@@ -2637,12 +2670,48 @@
           <div class="block-desc">${b.desc}</div>
         </div>
         <div class="block-actions">
-          <i class="ti ti-edit" aria-hidden="true" onclick="editFocusBlock('${phase}', ${i})"></i>
-          <i class="ti ti-trash" aria-hidden="true" onclick="deleteFocusBlock('${phase}', ${i})"></i>
+          <span onclick="editFocusBlock('${phase}', ${i})" style="display:flex;align-items:center;gap:3px;"><i class="ti ti-edit" aria-hidden="true"></i><span style="font-size:11px;">Edit</span></span>
+          <span onclick="deleteFocusBlock('${phase}', ${i})" style="display:flex;align-items:center;gap:3px;color:var(--red);"><i class="ti ti-trash" aria-hidden="true"></i><span style="font-size:11px;">Delete</span></span>
         </div>
       </div>
     `).join('');
     updatePhaseTabCount(phase);
+    renderDashboardTodayFocus();
+  }
+
+  function renderDashboardTodayFocus() {
+    const container = document.getElementById('dashboard-today-focus');
+    if (!container) return;
+
+    const nextDate = getNextSessionDate();
+    const isToday = isSameDate(nextDate, new Date());
+    const titleEl = document.getElementById('dashboard-focus-title');
+    const sessionTitleEl = document.getElementById('dashboard-focus-session-title');
+    const sessionMetaEl = document.getElementById('dashboard-focus-session-meta');
+    if (titleEl) titleEl.textContent = isToday ? "Today's focus" : 'Upcoming session focus';
+    if (sessionMetaEl) sessionMetaEl.textContent = formatSessionDate(nextDate) + ' \u00B7 8:00 \u2013 10:00 PM \u00B7 Theme: Set-piece defending';
+
+    const phaseLabels = { warmup: 'Warm-up', drills: 'Drills', game: 'Game', cooldown: 'Cool down' };
+    container.innerHTML = ['warmup', 'drills', 'game', 'cooldown'].map(phase => {
+      const meta = phaseIconMap[phase];
+      const blocks = focusBlocks[phase] || [];
+      if (!blocks.length) return '';
+      const items = blocks.map(b => `
+        <div class="focus-item" style="border-color:${meta.color};">
+          <i class="ti ${meta.icon}" style="color:${meta.color};" aria-hidden="true"></i>
+          <div><div class="focus-desc">${b.title}</div></div>
+          <span class="block-dur" style="margin-left:auto;">${b.dur}</span>
+        </div>
+      `).join('');
+      return `<div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.3px;margin:14px 0 8px;">${phaseLabels[phase]}</div>${items}`;
+    }).join('');
+
+    // Session dates for the check-in / feedback cards on the same dashboard
+    const preDateEl = document.getElementById('pre-checkin-session-date');
+    if (preDateEl) preDateEl.textContent = 'Checking in for: ' + formatSessionDate(nextDate) + (isToday ? ' (today)' : '');
+    const lastDate = getLastSessionDate();
+    const postDateEl = document.getElementById('post-feedback-session-date');
+    if (postDateEl) postDateEl.textContent = 'For session: ' + formatSessionDate(lastDate);
   }
 
   function updatePhaseTabCount(phase) {
@@ -2665,38 +2734,78 @@
     }
     titleEl.style.borderColor = '';
 
-    focusBlocks[phase].push({
+    const newBlock = {
       title: title,
       dur: dur ? (isNaN(dur) ? dur : dur + ' min') : '\u2014',
       desc: desc || 'No description added.'
-    });
+    };
+    focusBlocks[phase].push(newBlock);
 
     titleEl.value = '';
     durEl.value = '';
     descEl.value = '';
 
     renderFocusBlocks(phase);
+
+    if (typeof currentSessionId !== 'undefined' && currentSessionId && typeof supabaseClient !== 'undefined') {
+      supabaseClient.from('focus_blocks').insert({
+        session_id: currentSessionId, phase: phase, title: newBlock.title, duration: newBlock.dur,
+        description: newBlock.desc, sort_order: focusBlocks[phase].length - 1
+      }).select('id').single().then(({ data, error }) => {
+        if (error) console.error('Failed to save focus block:', error);
+        else if (data) newBlock.dbId = data.id;
+      });
+    }
   }
 
   function deleteFocusBlock(phase, index) {
+    const removed = focusBlocks[phase][index];
     focusBlocks[phase].splice(index, 1);
     renderFocusBlocks(phase);
+
+    if (removed && removed.dbId && typeof supabaseClient !== 'undefined') {
+      supabaseClient.from('focus_blocks').delete().eq('id', removed.dbId).then(({ error }) => {
+        if (error) console.error('Failed to delete focus block:', error);
+      });
+    }
   }
+
+  let editBlockContext = null; // { phase, index }
 
   function editFocusBlock(phase, index) {
     const b = focusBlocks[phase][index];
-    const newTitle = prompt('Block title', b.title.replace(/&middot;/g, '\u00B7'));
-    if (newTitle === null) return;
-    const newDur = prompt('Duration', b.dur);
-    if (newDur === null) return;
-    const newDesc = prompt('Description', b.desc);
-    if (newDesc === null) return;
+    editBlockContext = { phase, index };
+    document.getElementById('edit-block-title').value = b.title.replace(/&middot;/g, '\u00B7');
+    document.getElementById('edit-block-duration').value = b.dur;
+    document.getElementById('edit-block-description').value = b.desc;
+    document.getElementById('edit-block-modal').classList.add('open');
+  }
 
-    b.title = newTitle.trim() || b.title;
-    b.dur = newDur.trim() || b.dur;
-    b.desc = newDesc.trim() || b.desc;
+  function closeEditBlockModal() {
+    document.getElementById('edit-block-modal').classList.remove('open');
+    editBlockContext = null;
+  }
+
+  function saveEditBlock() {
+    if (!editBlockContext) return;
+    const { phase, index } = editBlockContext;
+    const b = focusBlocks[phase][index];
+    const newTitle = document.getElementById('edit-block-title').value.trim();
+    const newDur = document.getElementById('edit-block-duration').value.trim();
+    const newDesc = document.getElementById('edit-block-description').value.trim();
+
+    b.title = newTitle || b.title;
+    b.dur = newDur || b.dur;
+    b.desc = newDesc || b.desc;
 
     renderFocusBlocks(phase);
+    closeEditBlockModal();
+
+    if (b.dbId && typeof supabaseClient !== 'undefined') {
+      supabaseClient.from('focus_blocks').update({ title: b.title, duration: b.dur, description: b.desc }).eq('id', b.dbId).then(({ error }) => {
+        if (error) console.error('Failed to update focus block:', error);
+      });
+    }
   }
 
   ['warmup', 'drills', 'game', 'cooldown'].forEach(renderFocusBlocks);
@@ -2821,8 +2930,8 @@
     pastSessions[TODAY_KEY].myFeedback = todaySubmissions.postFeedback;
   }
 
-  function setCheckinWindow(state) {
-    const closed = state === 'closed';
+  function setCheckinWindow() {
+    const closed = !isPreCheckinWindowOpen();
     const preForm = document.getElementById('pre-checkin-form');
     const preLocked = document.getElementById('pre-checkin-locked');
     const preDone = document.getElementById('pre-checkin-done');
@@ -2836,21 +2945,133 @@
     if (preLocked) preLocked.style.display = (closed && !preSubmitted) ? 'flex' : 'none';
     if (preForm) preForm.style.display = (!preSubmitted && !closed) ? 'block' : 'none';
 
-    if (postLocked) postLocked.style.display = (closed && !postSubmitted) ? 'flex' : 'none';
-    if (postForm) postForm.style.display = (!postSubmitted && !closed) ? 'block' : 'none';
+    const postWindowOpen = isPostFeedbackWindowOpen();
+    if (postLocked) postLocked.style.display = (!postWindowOpen && !postSubmitted) ? 'flex' : 'none';
+    if (postForm) postForm.style.display = (!postSubmitted && postWindowOpen) ? 'block' : 'none';
   }
 </script>
 
 <script>
   if (typeof lookupPastMatch === 'function') { lookupPastMatch(); }
 
+  const sessionCancelledMap = {}; // keyed by 'YYYY-MM-DD' \u2014 declared early since init calls below use it
+
   // --- Supabase connection ---
   const SUPABASE_URL = 'https://znpnqfjsttlfrdhwniqf.supabase.co';
   const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpucG5xZmpzdHRsZnJkaHduaXFmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc1NTI1OTYsImV4cCI6MjEwMzEyODU5Nn0.rB6R8urz8D4dCHia94uGviRXgnc8TSOoXUx3WlBv1hQ';
   const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+  // --- Session persistence: finds or creates today's/next session row in Supabase,
+  // then loads its focus plan and availability so every device sees the same thing. ---
+  let currentSessionId = null;
+
+  async function ensureCurrentSession() {
+    const nextDate = getNextSessionDate();
+    const dateStr = formatDateKey(nextDate);
+    try {
+      const { data: existing, error: findErr } = await supabaseClient
+        .from('sessions').select('id').eq('session_date', dateStr).eq('session_type', 'practice').limit(1);
+      if (findErr) throw findErr;
+
+      if (existing && existing.length) {
+        currentSessionId = existing[0].id;
+      } else {
+        const { data: inserted, error: insertErr } = await supabaseClient
+          .from('sessions')
+          .insert({ session_type: 'practice', session_date: dateStr, title: 'Practice \u00B7 Regular', venue: 'Turf Ground 2', status: 'scheduled' })
+          .select('id').single();
+        if (insertErr) throw insertErr;
+        currentSessionId = inserted.id;
+      }
+      await loadFocusBlocksFromSupabase();
+      await loadSessionAvailabilityFromSupabase();
+    } catch (e) {
+      console.error('ensureCurrentSession failed:', e);
+    }
+  }
+
+  async function loadFocusBlocksFromSupabase() {
+    if (!currentSessionId || typeof focusBlocks === 'undefined') return;
+    try {
+      const { data, error } = await supabaseClient
+        .from('focus_blocks').select('*').eq('session_id', currentSessionId).order('sort_order', { ascending: true });
+      if (error) throw error;
+
+      if (data && data.length) {
+        ['warmup', 'drills', 'game', 'cooldown'].forEach(phase => { focusBlocks[phase] = []; });
+        data.forEach(row => {
+          if (focusBlocks[row.phase]) focusBlocks[row.phase].push({ dbId: row.id, title: row.title, dur: row.duration, desc: row.description });
+        });
+      } else {
+        // First time this session exists \u2014 seed the DB with the current local defaults
+        // so every other device sees the same starting plan instead of an empty one.
+        const inserts = [];
+        ['warmup', 'drills', 'game', 'cooldown'].forEach(phase => {
+          (focusBlocks[phase] || []).forEach((b, i) => {
+            inserts.push({ session_id: currentSessionId, phase, title: b.title, duration: b.dur, description: b.desc, sort_order: i });
+          });
+        });
+        if (inserts.length) {
+          const { data: seeded, error: seedErr } = await supabaseClient.from('focus_blocks').insert(inserts).select('*');
+          if (!seedErr && seeded) {
+            seeded.forEach(row => {
+              const arr = focusBlocks[row.phase];
+              if (arr && arr[row.sort_order]) arr[row.sort_order].dbId = row.id;
+            });
+          }
+        }
+      }
+      ['warmup', 'drills', 'game', 'cooldown'].forEach(p => { if (typeof renderFocusBlocks === 'function') renderFocusBlocks(p); });
+    } catch (e) {
+      console.error('loadFocusBlocksFromSupabase failed:', e);
+    }
+  }
+
+  async function loadSessionAvailabilityFromSupabase() {
+    if (!currentSessionId) return;
+    try {
+      const { data, error } = await supabaseClient.from('session_availability').select('*').eq('session_id', currentSessionId);
+      if (error) throw error;
+      if (data && data.length) {
+        data.forEach(row => {
+          const key = Object.keys(playerData).find(k => playerData[k].supabaseId === row.player_id);
+          if (key) {
+            playerData[key].available = row.available;
+            if (row.team) playerData[key].team = row.team;
+          }
+        });
+        if (typeof renderFocusSplitList === 'function') renderFocusSplitList();
+        if (typeof renderDashboardTeamSplit === 'function') renderDashboardTeamSplit();
+        if (typeof renderSquadDepth === 'function') renderSquadDepth();
+    if (typeof renderTeamOverviewStats === 'function') renderTeamOverviewStats();
+    if (typeof renderDefaulterList === 'function') renderDefaulterList();
+      }
+    } catch (e) {
+      console.error('loadSessionAvailabilityFromSupabase failed:', e);
+    }
+  }
+
   function slugifyName(name) {
     return name.toLowerCase().replace(/[^a-z]/g, '');
+  }
+
+  function skipLoginForPreview() {
+    // Just hides the login overlay \u2014 the app already has its full demo squad loaded
+    // and ready underneath, so this is purely for previewing the UI without touching
+    // Supabase at all. currentLoggedInKey stays on its default demo player, granted
+    // admin here so preview mode can still show the full Manage section.
+    document.getElementById('login-screen').style.display = 'none';
+    if (playerData[currentLoggedInKey]) playerData[currentLoggedInKey].isAdmin = true;
+    if (typeof updateAdminUIVisibility === 'function') updateAdminUIVisibility();
+  }
+
+  function skipLoginAsPlayer() {
+    // Same as above but deliberately keeps the demo player as a normal, non-admin
+    // player \u2014 for previewing exactly what an ordinary squad member sees, with the
+    // Manage section and admin-only actions correctly hidden/blocked.
+    document.getElementById('login-screen').style.display = 'none';
+    if (playerData[currentLoggedInKey]) playerData[currentLoggedInKey].isAdmin = false;
+    if (typeof updateAdminUIVisibility === 'function') updateAdminUIVisibility();
   }
 
   async function handleLogin() {
@@ -2959,9 +3180,60 @@
     if (typeof updateGreetingPointsRank === 'function') updateGreetingPointsRank();
     if (typeof updateAccountStatusTile === 'function') updateAccountStatusTile();
     if (typeof renderLast5SessionsDots === 'function') renderLast5SessionsDots();
+    if (typeof renderAttendanceManager === 'function') renderAttendanceManager();
+    if (typeof renderSquadDepth === 'function') renderSquadDepth();
+    if (typeof renderTeamOverviewStats === 'function') renderTeamOverviewStats();
+    if (typeof renderDefaulterList === 'function') renderDefaulterList();
+    if (typeof renderDashboardRecentFines === 'function') renderDashboardRecentFines();
+    if (typeof renderPendingConfirmationTile === 'function') renderPendingConfirmationTile();
+    if (typeof renderRecentlySettled === 'function') renderRecentlySettled();
+    if (typeof updateAdminUIVisibility === 'function') updateAdminUIVisibility();
+
+    // Now that we know who's in the squad, find/create the current session and load
+    // its focus plan + availability from Supabase so this device matches everyone else's.
+    if (typeof ensureCurrentSession === 'function') {
+      ensureCurrentSession().then(() => {
+        if (typeof renderAttendanceManager === 'function') renderAttendanceManager();
+        if (typeof renderSquadDepth === 'function') renderSquadDepth();
+    if (typeof renderTeamOverviewStats === 'function') renderTeamOverviewStats();
+    if (typeof renderDefaulterList === 'function') renderDefaulterList();
+      });
+    }
   }
 
   let currentLoggedInKey = 'vikram'; // set on successful phone login; 'vikram' is the pre-login fallback
+
+  // --- Role gating: only real admins get the Manage section and admin-only actions ---
+  const ADMIN_ONLY_PAGES = ['focus', 'analytics', 'fines', 'squad'];
+
+  function isCurrentUserAdmin() {
+    return !!(playerData[currentLoggedInKey] && playerData[currentLoggedInKey].isAdmin);
+  }
+
+  function updateAdminUIVisibility() {
+    const manageGroup = document.getElementById('manage-nav-group');
+    if (manageGroup) manageGroup.style.display = isCurrentUserAdmin() ? 'flex' : 'none';
+    renderSidebarUserCard();
+  }
+
+  function renderSidebarUserCard() {
+    const p = playerData[currentLoggedInKey];
+    if (!p) return;
+    const avatarEl = document.getElementById('sidebar-user-avatar');
+    const nameEl = document.getElementById('sidebar-user-name');
+    if (avatarEl) { avatarEl.textContent = p.initials; avatarEl.style.background = p.color; }
+    if (nameEl) nameEl.textContent = p.name;
+  }
+
+  function showAdminBlockedToast() {
+    const banner = document.createElement('div');
+    banner.style.cssText = 'position:fixed;top:24px;left:50%;transform:translateX(-50%);background:var(--red);color:#fff;padding:12px 20px;border-radius:10px;font-size:13px;font-weight:600;z-index:200;box-shadow:0 8px 24px rgba(0,0,0,0.2);';
+    banner.textContent = 'Admin access required for this page.';
+    document.body.appendChild(banner);
+    setTimeout(() => banner.remove(), 3000);
+  }
+
+
   let clearedViaRedeem = 120;
   let clearedViaPayment = 1120;
 
@@ -2990,15 +3262,15 @@
   const sessionSquadSize = { sess1: 22 };
   const sessionBaseConfirmed = { sess1: 17 }; // confirmed count excluding this player's own response
 
-  function setLockDemo(state) {
+  function setLockDemo() {
     const controls = document.getElementById('sess1-player-controls');
     const banner = document.getElementById('sess1-lock-banner');
     const amCard = document.getElementById('attendance-manager-card');
-    const locked = state === 'locked';
+    const locked = isAvailabilityLockActive();
 
     if (controls) controls.style.display = locked ? 'none' : 'block';
     if (banner) banner.style.display = locked ? 'flex' : 'none';
-    if (amCard) amCard.style.display = locked ? 'block' : 'none';
+    if (amCard) amCard.style.display = (locked && isCurrentUserAdmin()) ? 'block' : 'none';
   }
 
   const amFineMap = {
@@ -3008,8 +3280,60 @@
     'dress-code': { text: '&#8377;30 fine', bg: 'var(--amber-light)', color: 'var(--amber)', show: true }
   };
 
-  function applyAmStatus(playerCode, status) {
-    const tag = document.getElementById('am-fine-' + playerCode);
+  // In-time + late buffer: attendance manager sees the cutoff, admin is the one who can shift it
+  // (e.g. if the ground isn't available at the usual time). Late cutoff = in-time + 15 minutes.
+  const LATE_BUFFER_MINUTES = 15;
+  let sessionInTime = '20:00'; // 24hr, matches the <input type="time"> value format
+
+  function formatTime12h(hhmm) {
+    const [h, m] = hhmm.split(':').map(Number);
+    const period = h >= 12 ? 'PM' : 'AM';
+    const h12 = ((h + 11) % 12) + 1;
+    return h12 + ':' + String(m).padStart(2, '0') + ' ' + period;
+  }
+
+  function computeLateCutoff(inTime) {
+    const [h, m] = inTime.split(':').map(Number);
+    const totalMin = h * 60 + m + LATE_BUFFER_MINUTES;
+    const cutoffH = Math.floor(totalMin / 60) % 24;
+    const cutoffM = totalMin % 60;
+    return String(cutoffH).padStart(2, '0') + ':' + String(cutoffM).padStart(2, '0');
+  }
+
+  function updateInTime() {
+    const input = document.getElementById('am-in-time-input');
+    if (!input || !input.value) return;
+    sessionInTime = input.value;
+    const cutoffDisplay = document.getElementById('am-late-cutoff-display');
+    if (cutoffDisplay) cutoffDisplay.textContent = formatTime12h(computeLateCutoff(sessionInTime));
+  }
+
+  function renderAttendanceManager() {
+    const container = document.getElementById('attendance-manager-rows');
+    if (!container) return;
+    container.innerHTML = squadOrder.map(key => {
+      const p = playerData[key];
+      return `
+        <div class="am-row">
+          <div class="am-left"><div class="mini-avatar" style="background:${p.color};">${p.initials}</div>${p.name}</div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <select class="am-select" id="am-select-${key}" onchange="applyAmStatus('${key}', this.value)">
+              <option value="present">Present</option>
+              <option value="late">Late arrival</option>
+              <option value="no-show">No-show</option>
+              <option value="dress-code">Present &middot; no bibs</option>
+            </select>
+            <span class="am-fine-tag" id="am-fine-${key}" style="display:none;"></span>
+          </div>
+        </div>
+      `;
+    }).join('');
+    const cutoffDisplay = document.getElementById('am-late-cutoff-display');
+    if (cutoffDisplay) cutoffDisplay.textContent = formatTime12h(computeLateCutoff(sessionInTime));
+  }
+
+  function applyAmStatus(key, status) {
+    const tag = document.getElementById('am-fine-' + key);
     if (!tag) return;
     const info = amFineMap[status];
     if (info.show) {
@@ -3020,6 +3344,125 @@
     } else {
       tag.style.display = 'none';
     }
+  }
+
+  async function saveAttendance() {
+    const today = new Date();
+    const dateLabel = today.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+    const dateKey = today.toISOString().slice(0, 10);
+    let finesCreated = 0, presentCount = 0;
+    const dbWrites = [];
+    const sessionPresent = [], sessionLate = [], sessionAbsent = [];
+
+    squadOrder.forEach(key => {
+      const select = document.getElementById('am-select-' + key);
+      if (!select) return;
+      const status = select.value;
+      const p = playerData[key];
+
+      if (status === 'present' || status === 'dress-code') sessionPresent.push(p.name);
+      else if (status === 'late') sessionLate.push(p.name);
+      else if (status === 'no-show') sessionAbsent.push(p.name);
+
+      let attendanceStatus, fineReason, fineAmount, pointsDelta;
+      if (status === 'present') {
+        attendanceStatus = 'Present'; pointsDelta = 10;
+      } else if (status === 'late') {
+        attendanceStatus = 'Present'; fineReason = 'Late arrival'; fineAmount = 30; pointsDelta = -2;
+      } else if (status === 'no-show') {
+        attendanceStatus = 'Absent'; fineReason = 'No-show'; fineAmount = 50; pointsDelta = -4;
+      } else if (status === 'dress-code') {
+        attendanceStatus = 'Present'; fineReason = 'No Bibs'; fineAmount = 30; pointsDelta = -2;
+      }
+
+      // Record attendance history for this session
+      p.attendanceHistory = p.attendanceHistory || [];
+      p.attendanceHistory.unshift({
+        title: 'Practice \u00B7 Regular',
+        date: dateLabel,
+        status: attendanceStatus,
+        badge: attendanceStatus === 'Present' ? 'badge-paid' : (attendanceStatus === 'Late' ? 'badge-pending' : 'badge-unpaid')
+      });
+      if (attendanceStatus === 'Present') presentCount++;
+      recomputeAttendancePercent(p);
+
+      // Auto-create the fine
+      let newFineRef = null;
+      if (fineReason) {
+        newFineRef = { reason: fineReason, date: dateLabel, amount: fineAmount, status: 'unpaid', remaining: fineAmount };
+        p.fines = p.fines || [];
+        p.fines.push(newFineRef);
+        p.owed = (p.owed || 0) + fineAmount;
+        finesCreated++;
+      }
+
+      // Points: +10 for attending, deductions for late/no bibs/no-show
+      p.points = Math.max(0, (p.points || 0) + pointsDelta);
+      p.pointsEarned = (p.pointsEarned || 0) + Math.max(0, pointsDelta);
+
+      // Persist to Supabase: attendance row, fine row, and updated points on the player record
+      if (typeof currentSessionId !== 'undefined' && currentSessionId && p.supabaseId && typeof supabaseClient !== 'undefined') {
+        dbWrites.push(
+          supabaseClient.from('attendance').upsert({
+            session_id: currentSessionId, player_id: p.supabaseId, status: attendanceStatus, team: p.team || null
+          }, { onConflict: 'session_id,player_id' })
+        );
+        if (fineReason) {
+          dbWrites.push(
+            supabaseClient.from('fines').insert({
+              player_id: p.supabaseId, reason: fineReason, amount: fineAmount, remaining: fineAmount, status: 'unpaid', session_id: currentSessionId
+            }).select('id').single().then(({ data, error }) => {
+              if (!error && data && newFineRef) newFineRef.dbId = data.id;
+              return { error };
+            })
+          );
+        }
+        dbWrites.push(
+          supabaseClient.from('players').update({ points: p.points, points_earned: p.pointsEarned }).eq('id', p.supabaseId)
+        );
+      }
+    });
+
+    if (dbWrites.length) {
+      try {
+        const results = await Promise.all(dbWrites);
+        const failed = results.filter(r => r.error);
+        if (failed.length) console.error('Some attendance writes failed:', failed.map(r => r.error));
+      } catch (e) {
+        console.error('Attendance save failed:', e);
+      }
+    }
+
+    // Record this session into Past Sessions so the lookup shows real attendance, not fake demo history
+    if (typeof pastSessions !== 'undefined') {
+      pastSessions[dateKey] = {
+        title: 'Practice \u00B7 Regular',
+        meta: dateLabel + ' \u00B7 8:00 \u2013 10:00 PM \u00B7 Turf Ground 2',
+        present: sessionPresent, late: sessionLate, absent: sessionAbsent
+      };
+    }
+
+    // Refresh every view that depends on attendance/fines/points
+    if (typeof renderOutstandingFines === 'function') renderOutstandingFines();
+    if (typeof renderDashboardRecentFines === 'function') renderDashboardRecentFines();
+    if (typeof renderPendingConfirmationTile === 'function') renderPendingConfirmationTile();
+    if (typeof renderRecentlySettled === 'function') renderRecentlySettled();
+    if (typeof renderAdminSquadGrid === 'function') renderAdminSquadGrid();
+    if (typeof renderSquadPlayerGrid === 'function') renderSquadPlayerGrid();
+    if (typeof updateGreetingPointsRank === 'function') updateGreetingPointsRank();
+    if (typeof updateAccountStatusTile === 'function') updateAccountStatusTile();
+    if (typeof renderLast5SessionsDots === 'function') renderLast5SessionsDots();
+    if (typeof renderTeamOverviewStats === 'function') renderTeamOverviewStats();
+    if (typeof renderDefaulterList === 'function') renderDefaulterList();
+    if (document.getElementById('page-player') && document.getElementById('page-player').classList.contains('active') && typeof currentProfileId !== 'undefined') {
+      showPlayer(currentProfileId, profileOrigin);
+    }
+
+    const banner = document.createElement('div');
+    banner.style.cssText = 'position:fixed;top:24px;left:50%;transform:translateX(-50%);background:var(--green);color:#fff;padding:12px 20px;border-radius:10px;font-size:13px;font-weight:600;z-index:200;box-shadow:0 8px 24px rgba(0,0,0,0.2);';
+    banner.textContent = 'Attendance saved \u00B7 ' + presentCount + '/' + squadOrder.length + ' present \u00B7 ' + finesCreated + ' fine' + (finesCreated === 1 ? '' : 's') + ' created.';
+    document.body.appendChild(banner);
+    setTimeout(() => banner.remove(), 3500);
   }
 
   function cancelRecurringSession(id) {
@@ -3418,6 +3861,81 @@
     }
   }
 
+  function toggleManualLock(key) {
+    const p = playerData[key];
+    if (!p) return;
+    p.manuallyLocked = !p.manuallyLocked;
+    renderAdminSquadGrid();
+    if (typeof updateAccountStatusTile === 'function' && key === currentLoggedInKey) updateAccountStatusTile();
+    if (document.getElementById('page-player') && document.getElementById('page-player').classList.contains('active') && currentProfileId === key) {
+      showPlayer(key, profileOrigin);
+    }
+
+    if (p.supabaseId && typeof supabaseClient !== 'undefined') {
+      const newStatus = typeof getPlayerStatus === 'function' ? getPlayerStatus(p) : (p.manuallyLocked ? 'Locked' : 'Active');
+      supabaseClient.from('players').update({ status: newStatus }).eq('id', p.supabaseId).then(({ error }) => {
+        if (error) console.error('Failed to save lock status:', error);
+      });
+    }
+
+    const banner = document.createElement('div');
+    banner.style.cssText = 'position:fixed;top:24px;left:50%;transform:translateX(-50%);background:' + (p.manuallyLocked ? 'var(--red)' : 'var(--green)') + ';color:#fff;padding:12px 20px;border-radius:10px;font-size:13px;font-weight:600;z-index:200;box-shadow:0 8px 24px rgba(0,0,0,0.2);';
+    banner.textContent = p.name + (p.manuallyLocked ? ' locked \u00B7 removed from active squad access.' : ' unlocked \u00B7 access restored.');
+    document.body.appendChild(banner);
+    setTimeout(() => banner.remove(), 3000);
+  }
+
+  let pendingDeleteKey = null;
+
+  function confirmDeletePlayer(key) {
+    const p = playerData[key];
+    if (!p) return;
+    pendingDeleteKey = key;
+    document.getElementById('delete-player-name').textContent = p.name;
+    document.getElementById('delete-player-modal').classList.add('open');
+  }
+
+  function closeDeletePlayerModal() {
+    document.getElementById('delete-player-modal').classList.remove('open');
+    pendingDeleteKey = null;
+  }
+
+  function deletePlayerConfirmed() {
+    const key = pendingDeleteKey;
+    if (!key || !playerData[key]) return;
+    const name = playerData[key].name;
+    const supabaseId = playerData[key].supabaseId;
+
+    delete playerData[key];
+    const idx = squadOrder.indexOf(key);
+    if (idx > -1) squadOrder.splice(idx, 1);
+    delete squadColors[key];
+
+    document.getElementById('delete-player-modal').classList.remove('open');
+    pendingDeleteKey = null;
+
+    if (supabaseId && typeof supabaseClient !== 'undefined') {
+      // Deleting the player row cascades to their session_availability/attendance/fines rows too.
+      supabaseClient.from('players').delete().eq('id', supabaseId).then(({ error }) => {
+        if (error) console.error('Failed to delete player:', error);
+      });
+    }
+
+    if (typeof renderAdminSquadGrid === 'function') renderAdminSquadGrid();
+    if (typeof renderSquadPlayerGrid === 'function') renderSquadPlayerGrid();
+    if (typeof renderFocusSplitList === 'function') renderFocusSplitList();
+    if (typeof renderAttendanceManager === 'function') renderAttendanceManager();
+    if (typeof renderSquadDepth === 'function') renderSquadDepth();
+    if (typeof renderTeamOverviewStats === 'function') renderTeamOverviewStats();
+    if (typeof renderDefaulterList === 'function') renderDefaulterList();
+
+    const banner = document.createElement('div');
+    banner.style.cssText = 'position:fixed;top:24px;left:50%;transform:translateX(-50%);background:var(--red);color:#fff;padding:12px 20px;border-radius:10px;font-size:13px;font-weight:600;z-index:200;box-shadow:0 8px 24px rgba(0,0,0,0.2);';
+    banner.textContent = name + ' removed from the squad.';
+    document.body.appendChild(banner);
+    setTimeout(() => banner.remove(), 3000);
+  }
+
   function renderAdminSquadGrid() {
     const grid = document.getElementById('squad-admin-grid');
     if (!grid) return;
@@ -3429,6 +3947,7 @@
       const cards = keys.map(key => {
         const p = playerData[key];
         const ms = matchStats[p.name] || { goals: 0, cleanSheets: 0 };
+        const isLocked = typeof getPlayerStatus === 'function' ? getPlayerStatus(p) === 'Locked' : false;
         return `
           <div class="player-card" data-name="${p.name.toLowerCase()}" data-pos="${p.pos}" onclick="showPlayer('${key}','squad')">
             <div class="player-card-top">
@@ -3439,6 +3958,14 @@
               <div class="player-card-stat"><div class="v">${p.attendance}</div><div class="l">Attend.</div></div>
               <div class="player-card-stat"><div class="v">${ms.goals}</div><div class="l">Goals</div></div>
               <div class="player-card-stat"><div class="v">&#8377;${p.owed}</div><div class="l">Owed</div></div>
+            </div>
+            <div style="display:flex;gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid var(--line);" onclick="event.stopPropagation();">
+              <span onclick="toggleManualLock('${key}')" style="display:flex;align-items:center;gap:4px;font-size:11px;color:${isLocked ? 'var(--red)' : 'var(--muted)'};cursor:pointer;">
+                <i class="ti ${isLocked ? 'ti-lock' : 'ti-lock-open'}" aria-hidden="true"></i>${isLocked ? 'Unlock' : 'Lock'}
+              </span>
+              <span onclick="confirmDeletePlayer('${key}')" style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--red);cursor:pointer;margin-left:auto;">
+                <i class="ti ti-trash" aria-hidden="true"></i>Delete
+              </span>
             </div>
           </div>
         `;
@@ -3517,6 +4044,9 @@
   }
 
   function computeOverallRating(p, matchStats, sessionsMissed) {
+    const sessionsPlayed = (p.attendanceHistory || []).length;
+    if (sessionsPlayed === 0) return 0; // no sessions recorded yet \u2014 nothing to rate
+
     const attendancePct = parseInt(p.attendance);
     const scores = {
       attendance: attendanceFactorScore(attendancePct),
@@ -3549,6 +4079,7 @@
   }
 
   function getPlayerStatus(p) {
+    if (p.manuallyLocked) return 'Locked';
     return countUnpaidIncidents(p) > 4 ? 'Locked' : 'Active';
   }
 
@@ -3558,7 +4089,7 @@
     const matchCount = history.filter(s => s.status === 'Present' && s.title.includes('Match')).length;
     const regularPts = regularCount * 10;
     const matchPts = matchCount * 10;
-    const deductionMap = { 'No-show': 4, 'Late arrival': 2, 'Dress code': 2 };
+    const deductionMap = { 'No-show': 4, 'Late arrival': 2, 'No Bibs': 2 };
     const deductions = (p.fines || []).reduce((sum, f) => sum + (deductionMap[f.reason] || 0), 0);
     return {
       total: Math.max(0, regularPts + matchPts - deductions),
@@ -4153,7 +4684,7 @@
     const rows = [
       { label: 'Attendance \u2013 regular practice', value: '+' + e.regularPts, note: e.regularCount + ' session' + (e.regularCount === 1 ? '' : 's') + ' \u00D7 10 pts each' },
       { label: 'Attendance \u2013 match', value: '+' + e.matchPts, note: e.matchCount + ' match' + (e.matchCount === 1 ? '' : 'es') + ' \u00D7 10 pts each' },
-      { label: 'Deductions', value: e.deductions > 0 ? '\u2212' + e.deductions : '0', note: '\u22124 no-show \u00B7 \u22122 wrong dress code \u00B7 \u22122 late arrival' }
+      { label: 'Deductions', value: e.deductions > 0 ? '\u2212' + e.deductions : '0', note: '\u22124 no-show \u00B7 \u22122 no bibs \u00B7 \u22122 late arrival' }
     ];
 
     tbody.innerHTML = rows.map(r => `
@@ -4338,7 +4869,7 @@
     document.getElementById('redeem-confirm-modal').classList.remove('open');
   }
 
-  function confirmRedeemPoints() {
+  async function confirmRedeemPoints() {
     const p = playerData[currentProfileId];
     if (!p || p.owed <= 0 || p.points <= 0) { closeRedeemConfirmModal(); return; }
 
@@ -4348,6 +4879,7 @@
     // doesn't need to manually adjust anything \u2014 only a full cash settlement needs their action.
     let pool = pointsToUse;
     const owedBefore = p.owed;
+    const touchedFines = [];
     for (const f of p.fines) {
       if (pool <= 0) break;
       if (f.status === 'paid') continue;
@@ -4360,6 +4892,7 @@
         f.status = 'partial';
         pool = 0;
       }
+      touchedFines.push(f);
     }
 
     recomputeOwed(p);
@@ -4371,11 +4904,29 @@
       updateFinesTotals(-applied, applied, 'redeem');
     }
 
+    // Persist to Supabase: updated status/remaining on each touched fine, and the player's new points balance.
+    if (p.supabaseId && typeof supabaseClient !== 'undefined') {
+      const dbWrites = touchedFines
+        .filter(f => f.dbId)
+        .map(f => supabaseClient.from('fines').update({ status: f.status, remaining: f.remaining }).eq('id', f.dbId));
+      dbWrites.push(supabaseClient.from('players').update({ points: 0, points_redeemed: p.pointsRedeemed }).eq('id', p.supabaseId));
+      try {
+        const results = await Promise.all(dbWrites);
+        const failed = results.filter(r => r.error);
+        if (failed.length) console.error('Some redeem writes failed:', failed.map(r => r.error));
+      } catch (e) {
+        console.error('Redeem points save failed:', e);
+      }
+    }
+
     closeRedeemConfirmModal();
     showPlayer(currentProfileId, profileOrigin);
     updateGreetingPointsRank();
     updateAccountStatusTile();
     if (typeof renderOutstandingFines === 'function') renderOutstandingFines();
+    if (typeof renderDashboardRecentFines === 'function') renderDashboardRecentFines();
+    if (typeof renderPendingConfirmationTile === 'function') renderPendingConfirmationTile();
+    if (typeof renderRecentlySettled === 'function') renderRecentlySettled();
     if (typeof renderSquadPlayerGrid === 'function') renderSquadPlayerGrid();
     if (typeof renderAdminSquadGrid === 'function') renderAdminSquadGrid();
     showRedeemSuccessMessage(pointsToUse, applied, p.owed);
@@ -4570,7 +5121,9 @@
     if (iconWrap) {
       iconWrap.style.background = locked ? 'var(--red-light)' : 'var(--green-light)';
       iconWrap.style.color = locked ? 'var(--red)' : 'var(--green)';
-      iconWrap.innerHTML = locked ? '<i class="ti ti-lock" aria-hidden="true"></i>' : '<i class="ti ti-lock-open" aria-hidden="true"></i>';
+      iconWrap.innerHTML = locked
+        ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>'
+        : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 7-3.9"/></svg>';
     }
     if (labelEl) {
       if (locked) {
@@ -4591,6 +5144,12 @@
     const rankEl = document.getElementById('greeting-rank');
     const ratingEl = document.getElementById('greeting-rating');
     const taglineEl = document.getElementById('greeting-tagline');
+    const titleEl = document.getElementById('greeting-title');
+    if (titleEl && self) {
+      const hour = new Date().getHours();
+      const timeGreeting = hour < 12 ? 'Good morning' : (hour < 17 ? 'Good afternoon' : 'Good evening');
+      titleEl.textContent = timeGreeting + ', ' + self.name.split(' ')[0] + '!';
+    }
     if (ptsEl) ptsEl.textContent = self.points;
     if (rankEl) rankEl.textContent = '#' + rankInfo.rank;
     if (ratingEl) {
@@ -4614,6 +5173,17 @@
   renderLast5SessionsDots();
   renderAvailableTrend();
   updateFineClearanceTiles();
+  renderAttendanceManager();
+  renderSquadDepth();
+  renderTeamOverviewStats();
+  renderDefaulterList();
+  renderDashboardRecentFines();
+  renderPendingConfirmationTile();
+  renderRecentlySettled();
+  renderUpcomingSessionsList();
+  renderSingleUpcomingSessionDate();
+  setCheckinWindow();
+  setLockDemo();
   showTeamFact();
   renderTodaysTeamCheckins();
   renderOutstandingFines();
@@ -4687,6 +5257,107 @@
     return rows;
   }
 
+  function renderPendingConfirmationTile() {
+    const el = document.getElementById('fines-pending-confirmation');
+    if (!el) return;
+    let total = 0;
+    Object.values(playerData).forEach(p => {
+      (p.fines || []).forEach(f => {
+        if (f.status === 'pending') total += (f.remaining != null ? f.remaining : f.amount);
+      });
+    });
+    el.innerHTML = '&#8377;' + total.toLocaleString('en-IN');
+  }
+
+  function renderRecentlySettled() {
+    const tbody = document.getElementById('recently-settled-tbody');
+    if (!tbody) return;
+    const settled = [];
+    Object.values(playerData).forEach(p => {
+      (p.fines || []).forEach(f => {
+        if (f.status === 'paid') settled.push({ player: p, fine: f });
+      });
+    });
+    // Most recently added first (fines are pushed in chronological order, so reverse gives newest first)
+    settled.reverse();
+    const top = settled.slice(0, 8);
+
+    if (!top.length) {
+      tbody.innerHTML = `<tr><td colspan="5" style="font-size:12.5px;color:var(--muted);padding:12px 0;">No fines settled yet.</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = top.map(({ player: p, fine: f }) => `
+      <tr>
+        <td><div class="player-cell"><div class="mini-avatar" style="background:${p.color};">${p.initials}</div>${p.name}</div></td>
+        <td>${f.reason}</td>
+        <td>${f.date || '\u2014'}</td>
+        <td style="text-align:right;font-weight:600;color:var(--green);">&#8377;${f.amount}</td>
+        <td style="text-align:right;"><span class="badge badge-paid">Paid</span></td>
+      </tr>
+    `).join('');
+  }
+
+  function openRecordFineModal() {
+    const select = document.getElementById('record-fine-player');
+    select.innerHTML = squadOrder.map(key => `<option value="${key}">${playerData[key].name}</option>`).join('');
+    document.getElementById('record-fine-reason').value = '';
+    document.getElementById('record-fine-amount').value = '';
+    document.getElementById('record-fine-error').style.display = 'none';
+    document.getElementById('record-fine-modal').classList.add('open');
+  }
+
+  function closeRecordFineModal() {
+    document.getElementById('record-fine-modal').classList.remove('open');
+  }
+
+  function submitRecordFine() {
+    const key = document.getElementById('record-fine-player').value;
+    const reason = document.getElementById('record-fine-reason').value.trim();
+    const amount = parseInt(document.getElementById('record-fine-amount').value, 10);
+    const errorEl = document.getElementById('record-fine-error');
+
+    if (!reason || !amount || amount <= 0) {
+      errorEl.textContent = 'Enter a reason and a valid amount.';
+      errorEl.style.display = 'block';
+      return;
+    }
+
+    const p = playerData[key];
+    const dateLabel = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+    const newFine = { reason, date: dateLabel, amount, status: 'unpaid', remaining: amount };
+    p.fines = p.fines || [];
+    p.fines.push(newFine);
+    p.owed = (p.owed || 0) + amount;
+
+    if (p.supabaseId && typeof supabaseClient !== 'undefined') {
+      supabaseClient.from('fines').insert({
+        player_id: p.supabaseId, reason, amount, remaining: amount, status: 'unpaid',
+        session_id: (typeof currentSessionId !== 'undefined' ? currentSessionId : null)
+      }).select('id').single().then(({ data, error }) => {
+        if (error) console.error('Failed to save fine:', error);
+        else if (data) newFine.dbId = data.id;
+      });
+    }
+
+    closeRecordFineModal();
+    renderOutstandingFines();
+    renderPendingConfirmationTile();
+    renderRecentlySettled();
+    if (typeof renderDashboardRecentFines === 'function') renderDashboardRecentFines();
+    if (typeof renderPendingConfirmationTile === 'function') renderPendingConfirmationTile();
+    if (typeof renderRecentlySettled === 'function') renderRecentlySettled();
+    if (typeof renderAdminSquadGrid === 'function') renderAdminSquadGrid();
+    if (typeof renderSquadPlayerGrid === 'function') renderSquadPlayerGrid();
+    if (typeof updateAccountStatusTile === 'function') updateAccountStatusTile();
+
+    const banner = document.createElement('div');
+    banner.style.cssText = 'position:fixed;top:24px;left:50%;transform:translateX(-50%);background:var(--green);color:#fff;padding:12px 20px;border-radius:10px;font-size:13px;font-weight:600;z-index:200;box-shadow:0 8px 24px rgba(0,0,0,0.2);';
+    banner.textContent = 'Fine recorded \u00B7 ' + p.name + ' \u00B7 \u20B9' + amount;
+    document.body.appendChild(banner);
+    setTimeout(() => banner.remove(), 3000);
+  }
+
   function renderOutstandingFines() {
     const tbody = document.getElementById('outstanding-fines-tbody');
     if (!tbody) return;
@@ -4733,22 +5404,42 @@
     if (chevron) chevron.classList.toggle('rotated', !isOpen);
   }
 
-  function clearAllDues(key) {
+  async function clearAllDues(key) {
     const p = playerData[key];
     if (!p) return;
     const total = p.fines.reduce((sum, f) => sum + (f.status !== 'paid' ? (f.remaining !== undefined ? f.remaining : f.amount) : 0), 0);
     if (total <= 0) return;
 
+    const touchedFines = [];
     p.fines.forEach(f => {
       if (f.status !== 'paid') {
         f.status = 'paid';
         f.remaining = 0;
+        touchedFines.push(f);
       }
     });
     p.owed = 0;
 
+    if (typeof supabaseClient !== 'undefined') {
+      const dbWrites = touchedFines
+        .filter(f => f.dbId)
+        .map(f => supabaseClient.from('fines').update({ status: 'paid', remaining: 0 }).eq('id', f.dbId));
+      if (dbWrites.length) {
+        try {
+          const results = await Promise.all(dbWrites);
+          const failed = results.filter(r => r.error);
+          if (failed.length) console.error('Some clear-dues writes failed:', failed.map(r => r.error));
+        } catch (e) {
+          console.error('Clear dues save failed:', e);
+        }
+      }
+    }
+
     updateFinesTotals(-total, total, 'payment');
     renderOutstandingFines();
+    if (typeof renderDashboardRecentFines === 'function') renderDashboardRecentFines();
+    if (typeof renderPendingConfirmationTile === 'function') renderPendingConfirmationTile();
+    if (typeof renderRecentlySettled === 'function') renderRecentlySettled();
     updateAccountStatusTile();
     if (typeof renderAdminSquadGrid === 'function') renderAdminSquadGrid();
     if (typeof renderSquadPlayerGrid === 'function') renderSquadPlayerGrid();
@@ -4840,6 +5531,21 @@
   function toggleSessionAvailability(key) {
     playerData[key].available = !playerData[key].available;
     renderFocusSplitList();
+    renderSquadDepth();
+    renderTeamOverviewStats();
+    renderDefaulterList();
+    persistAvailability(key);
+  }
+
+  function persistAvailability(key) {
+    const p = playerData[key];
+    if (typeof currentSessionId !== 'undefined' && currentSessionId && p.supabaseId && typeof supabaseClient !== 'undefined') {
+      supabaseClient.from('session_availability').upsert({
+        session_id: currentSessionId, player_id: p.supabaseId, available: p.available, team: p.team
+      }, { onConflict: 'session_id,player_id' }).then(({ error }) => {
+        if (error) console.error('Failed to save availability:', error);
+      });
+    }
   }
 
   function autoAssignTeams() {
@@ -4857,6 +5563,7 @@
   function setPlayerTeam(key, team) {
     playerData[key].team = team;
     renderFocusSplitList();
+    persistAvailability(key);
   }
 
   function updateFocusSplitCounts() {
@@ -4872,6 +5579,202 @@
   function selectFocusFormat(el) {
     document.querySelectorAll('#focus-format-row .format-chip').forEach(c => c.classList.remove('active'));
     el.classList.add('active');
+  }
+
+  function renderDashboardRecentFines() {
+    const tbody = document.getElementById('dashboard-recent-fines-body');
+    if (!tbody) return;
+    const p = playerData[currentLoggedInKey];
+    if (!p) return;
+    const fines = (p.fines || []).slice(-4).reverse(); // most recent first, this player only
+    if (!fines.length) {
+      tbody.innerHTML = `<tr><td colspan="2" style="font-size:12.5px;color:var(--muted);padding:10px 0;">No fines on record \u2014 clean sheet.</td></tr>`;
+      return;
+    }
+    tbody.innerHTML = fines.map(f => {
+      const isPaid = f.status === 'paid';
+      const badgeClass = isPaid ? 'badge-paid' : (f.status === 'partial' || f.status === 'pending' ? 'badge-pending' : 'badge-unpaid');
+      return `
+        <tr>
+          <td>
+            <div class="player-cell"><div class="mini-avatar" style="background:${p.color};">${p.initials}</div>
+              <div>
+                <div>${p.name}</div>
+                <div style="font-size:11px;color:var(--muted);">Fine for ${f.reason.toLowerCase()}</div>
+              </div>
+            </div>
+          </td>
+          <td style="text-align:right;"><span class="badge ${badgeClass}">${isPaid ? 'Paid \u00B7 ' : ''}&#8377;${f.amount}</span></td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  function getUpcomingSessionDates(n) {
+    const dates = [];
+    const d = new Date();
+    d.setHours(0, 0, 0, 0);
+    let i = 0;
+    while (dates.length < n && i < 30) {
+      const c = new Date(d);
+      c.setDate(d.getDate() + i);
+      if (c.getDay() === 2 || c.getDay() === 4) dates.push(c);
+      i++;
+    }
+    return dates;
+  }
+
+  function formatDateKey(d) {
+    return d.toISOString().slice(0, 10);
+  }
+
+  function renderUpcomingSessionsList() {
+    const container = document.getElementById('upcoming-sessions-list');
+    if (!container) return;
+    const dates = getUpcomingSessionDates(2);
+    container.innerHTML = dates.map(d => {
+      const key = formatDateKey(d);
+      const cancelled = !!sessionCancelledMap[key];
+      const dayLabel = d.toLocaleDateString('en-GB', { weekday: 'short' });
+      const monthLabel = d.toLocaleDateString('en-GB', { month: 'short' });
+      return `
+        <div class="session-row">
+          <div class="session-left">
+            <div class="session-date-box"><span class="d">${d.getDate()}</span><span class="m">${monthLabel}</span></div>
+            <div>
+              <div class="session-title-txt">Practice &middot; Regular</div>
+              <div class="session-meta">${dayLabel} &middot; 8:00 &ndash; 10:00 PM</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <span class="status-pill ${cancelled ? 'pill-cancelled' : 'pill-confirmed'}">${cancelled ? 'Cancelled' : 'Scheduled'}</span>
+            <span class="card-link" style="font-size:11px;color:${cancelled ? 'var(--green)' : 'var(--red)'};" onclick="toggleUpcomingSessionCancelled('${key}')">${cancelled ? 'Reinstate' : 'Cancel'} &middot; coach only</span>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function toggleUpcomingSessionCancelled(key) {
+    sessionCancelledMap[key] = !sessionCancelledMap[key];
+    renderUpcomingSessionsList();
+  }
+
+  function renderSingleUpcomingSessionDate() {
+    const metaEl = document.getElementById('sess1-meta');
+    if (!metaEl) return;
+    const nextDate = getNextSessionDate();
+    const dayLabel = nextDate.toLocaleDateString('en-GB', { weekday: 'short' });
+    const dateLabel = nextDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+    metaEl.textContent = dayLabel + ', ' + dateLabel + ' \u00B7 8:00 \u2013 10:00 PM \u00B7 Turf Ground 2 \u00B7 Theme: Set-piece defending';
+  }
+
+  function recomputeAttendancePercent(p) {
+    const history = p.attendanceHistory || [];
+    if (!history.length) { p.attendance = '0%'; return; }
+    const present = history.filter(s => s.status === 'Present').length;
+    p.attendance = Math.round((present / history.length) * 100) + '%';
+  }
+
+  function renderDefaulterList() {
+    const body = document.getElementById('defaulter-list-body');
+    if (!body) return;
+    const ranked = squadOrder
+      .map(k => {
+        const p = playerData[k];
+        const incidents = (p.fines || []).length;
+        const unpaid = (p.fines || []).filter(f => f.status === 'unpaid').length;
+        const pending = (p.fines || []).filter(f => f.status === 'pending').length;
+        return { p, incidents, unpaid, pending };
+      })
+      .filter(r => r.incidents > 0)
+      .sort((a, b) => b.incidents - a.incidents)
+      .slice(0, 5);
+
+    if (!ranked.length) {
+      body.innerHTML = `<div style="font-size:12.5px;color:var(--muted);padding:10px 0;">No fine incidents recorded yet \u2014 clean squad.</div>`;
+      return;
+    }
+
+    body.innerHTML = ranked.map((r, i) => `
+      <div class="defaulter-row">
+        <div class="defaulter-left">
+          <span class="defaulter-rank">${i + 1}</span>
+          <div class="mini-avatar" style="background:${r.p.color};">${r.p.initials}</div>
+          <div>${r.p.name}</div>
+        </div>
+        <div style="text-align:right;">
+          <div class="defaulter-count">${r.incidents} incident${r.incidents === 1 ? '' : 's'}</div>
+          <div class="defaulter-count-sub">${r.unpaid} unpaid${r.pending ? ' \u00B7 ' + r.pending + ' pending' : ''}</div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function renderTeamOverviewStats() {
+    const availableEl = document.getElementById('team-stat-available');
+    const attendanceEl = document.getElementById('team-stat-attendance');
+    const scorerEl = document.getElementById('team-stat-topscorer');
+    const scorerGoalsEl = document.getElementById('team-stat-topscorer-goals');
+    const bestAttEl = document.getElementById('team-stat-bestattendance');
+    const bestAttPctEl = document.getElementById('team-stat-bestattendance-pct');
+    if (!availableEl) return;
+
+    const availableCount = squadOrder.filter(k => playerData[k].available).length;
+    availableEl.textContent = availableCount;
+
+    const attendancePcts = squadOrder.map(k => parseInt(playerData[k].attendance) || 0);
+    const avgAttendance = attendancePcts.length ? Math.round(attendancePcts.reduce((a, b) => a + b, 0) / attendancePcts.length) : 0;
+    attendanceEl.textContent = avgAttendance + '%';
+
+    const matchStats = (typeof computeMatchStats === 'function') ? computeMatchStats() : {};
+    let topScorerName = null, topScorerGoals = 0;
+    squadOrder.forEach(k => {
+      const g = (matchStats[playerData[k].name] || {}).goals || 0;
+      if (g > topScorerGoals) { topScorerGoals = g; topScorerName = playerData[k].name; }
+    });
+    if (topScorerName) {
+      scorerEl.textContent = topScorerName.split(' ')[0];
+      scorerGoalsEl.textContent = topScorerGoals + (topScorerGoals === 1 ? ' goal' : ' goals');
+    } else {
+      scorerEl.textContent = '\u2014';
+      scorerGoalsEl.textContent = 'No goals yet';
+    }
+
+    let bestName = null, bestPct = -1;
+    squadOrder.forEach(k => {
+      const p = playerData[k];
+      const sessions = (p.attendanceHistory || []).length;
+      const pct = parseInt(p.attendance) || 0;
+      if (sessions >= 5 && pct > bestPct) { bestPct = pct; bestName = p.name; }
+    });
+    if (bestName) {
+      bestAttEl.textContent = bestName.split(' ')[0];
+      bestAttPctEl.textContent = bestPct + '%';
+    } else {
+      bestAttEl.textContent = '\u2014';
+      bestAttPctEl.textContent = 'No data yet';
+    }
+  }
+
+  function renderSquadDepth() {
+    const titleEl = document.getElementById('squad-depth-title');
+    const gridEl = document.getElementById('squad-depth-grid');
+    if (!gridEl) return;
+
+    const isToday = isSameDate(getNextSessionDate(), new Date());
+    if (titleEl) titleEl.textContent = isToday ? "Today's squad depth" : 'Upcoming session squad depth';
+
+    const available = (typeof getAvailableSquad === 'function') ? getAvailableSquad() : [];
+    const counts = { GK: 0, DEF: 0, MID: 0, FWD: 0 };
+    available.forEach(p => { if (counts[p.pos] !== undefined) counts[p.pos]++; });
+
+    gridEl.innerHTML = `
+      <div class="depth-card"><div class="depth-count">${counts.GK}</div><div class="depth-label">GK</div></div>
+      <div class="depth-card"><div class="depth-count">${counts.DEF}</div><div class="depth-label">DEF</div></div>
+      <div class="depth-card"><div class="depth-count">${counts.MID}</div><div class="depth-label">MID</div></div>
+      <div class="depth-card"><div class="depth-count">${counts.FWD}</div><div class="depth-label">FWD</div></div>
+    `;
   }
 
   function renderDashboardTeamSplit() {
@@ -4905,6 +5808,135 @@
     setTimeout(() => banner.remove(), 3000);
   }
 
+  let scheduledMatchesCache = [];
+
+  async function loadScheduledMatchesForResult() {
+    const select = document.getElementById('match-result-select');
+    if (!select || typeof supabaseClient === 'undefined') return;
+    try {
+      const { data, error } = await supabaseClient
+        .from('sessions').select('*').eq('session_type', 'match').order('session_date', { ascending: false });
+      if (error) throw error;
+      scheduledMatchesCache = data || [];
+      if (!scheduledMatchesCache.length) {
+        select.innerHTML = '<option value="">No matches scheduled yet \u2014 use "New match" first</option>';
+        return;
+      }
+      select.innerHTML = scheduledMatchesCache.map(m =>
+        `<option value="${m.id}">${m.title} \u00B7 ${m.session_date}${m.status === 'completed' ? ' (result recorded)' : ''}</option>`
+      ).join('');
+      onMatchResultSelected();
+    } catch (e) {
+      console.error('Failed to load scheduled matches:', e && e.message ? e.message : e);
+      select.innerHTML = '<option value="">Can\u2019t reach the server \u2014 try on personal data/WiFi, not office network</option>';
+    }
+  }
+
+  const opponentBadgeColors = ['#378ADD', '#D85A30', '#5DCAA5', '#7F77DD', '#D4537E', '#EF9F27', '#4E7FB0', '#A65DD0'];
+
+  function colorForOpponent(name) {
+    let hash = 0;
+    for (let i = 0; i < name.length; i++) hash = (hash * 31 + name.charCodeAt(i)) % opponentBadgeColors.length;
+    return opponentBadgeColors[Math.abs(hash) % opponentBadgeColors.length];
+  }
+
+  function onMatchResultSelected() {
+    const select = document.getElementById('match-result-select');
+    const match = scheduledMatchesCache.find(m => m.id === select.value);
+    document.getElementById('match-our-score').value = (match && match.our_score != null) ? match.our_score : 0;
+    document.getElementById('match-their-score').value = (match && match.their_score != null) ? match.their_score : 0;
+    document.getElementById('match-scorers-list').innerHTML = '';
+
+    const preview = document.getElementById('match-opponent-badge-preview');
+    const tagEl = document.getElementById('match-opponent-badge-tag');
+    const nameEl = document.getElementById('match-opponent-badge-name');
+    if (match && match.opponent) {
+      const tag = match.opponent_tag || generateOpponentTag(match.opponent);
+      tagEl.textContent = tag;
+      tagEl.style.background = colorForOpponent(match.opponent);
+      nameEl.textContent = 'vs ' + match.opponent;
+      preview.style.display = 'flex';
+    } else {
+      preview.style.display = 'none';
+    }
+  }
+
+  function addMatchScorerRow() {
+    const list = document.getElementById('match-scorers-list');
+    if (!list) return;
+    const options = squadOrder.map(key => `<option value="${playerData[key].name}">${playerData[key].name}</option>`).join('');
+    const row = document.createElement('div');
+    row.className = 'scorer-row';
+    row.innerHTML = `
+      <select>${options}</select>
+      <input type="number" min="1" value="1">
+      <i class="ti ti-trash" onclick="this.parentElement.remove()" aria-hidden="true"></i>
+    `;
+    list.appendChild(row);
+  }
+
+  async function saveMatchResult() {
+    const select = document.getElementById('match-result-select');
+    const matchId = select.value;
+    const match = scheduledMatchesCache.find(m => m.id === matchId);
+    if (!match) {
+      alert('Pick a match first.');
+      return;
+    }
+
+    const ourScore = parseInt(document.getElementById('match-our-score').value, 10) || 0;
+    const theirScore = parseInt(document.getElementById('match-their-score').value, 10) || 0;
+    const scorers = Array.from(document.querySelectorAll('#match-scorers-list .scorer-row')).map(row => {
+      const name = row.querySelector('select').value;
+      const goals = parseInt(row.querySelector('input').value, 10) || 0;
+      return [name, goals];
+    }).filter(([, goals]) => goals > 0);
+
+    // Lineup = everyone currently marked available (shares the same availability flag as practice for now)
+    const lineup = getAvailableSquad().map(p => [p.pos, p.name]);
+
+    // Reflect immediately in local pastMatches so performance ratings update right away this session
+    if (typeof pastMatches !== 'undefined') {
+      pastMatches[match.session_date] = { ourScore, theirScore, scorers, lineup };
+    }
+
+    if (typeof supabaseClient !== 'undefined') {
+      try {
+        const { error: updateErr } = await supabaseClient.from('sessions')
+          .update({ our_score: ourScore, their_score: theirScore, status: 'completed' }).eq('id', matchId);
+        if (updateErr) throw updateErr;
+
+        for (const [name, goals] of scorers) {
+          const key = Object.keys(playerData).find(k => playerData[k].name === name);
+          const supabaseId = key ? playerData[key].supabaseId : null;
+          if (supabaseId) {
+            const { error: goalErr } = await supabaseClient.from('goals').insert({ session_id: matchId, player_id: supabaseId, goal_count: goals });
+            if (goalErr) console.error('Failed to save match goal:', goalErr);
+          }
+        }
+      } catch (e) {
+        console.error('Failed to save match result:', e);
+        alert('Could not save the result \u2014 check your connection and try again.');
+        return;
+      }
+    }
+
+    if (typeof renderAdminSquadGrid === 'function') renderAdminSquadGrid();
+    if (typeof renderSquadPlayerGrid === 'function') renderSquadPlayerGrid();
+    if (typeof showTeamFact === 'function') showTeamFact();
+    if (typeof currentProfileId !== 'undefined' && document.getElementById('page-player').classList.contains('active')) {
+      showPlayer(currentProfileId, profileOrigin);
+    }
+
+    await loadScheduledMatchesForResult(); // refresh dropdown to show "(result recorded)"
+
+    const banner = document.createElement('div');
+    banner.style.cssText = 'position:fixed;top:24px;left:50%;transform:translateX(-50%);background:var(--green);color:#fff;padding:12px 20px;border-radius:10px;font-size:13px;font-weight:600;z-index:200;box-shadow:0 8px 24px rgba(0,0,0,0.2);';
+    banner.textContent = 'Result saved \u00B7 ' + match.title + ' \u00B7 ' + ourScore + '\u2013' + theirScore + '.';
+    document.body.appendChild(banner);
+    setTimeout(() => banner.remove(), 3500);
+  }
+
   function addPracticeScorerRow() {
     const list = document.getElementById('practice-scorers-list');
     if (!list) return;
@@ -4935,10 +5967,30 @@
     const todayKey = new Date().toISOString().slice(0, 10);
     practiceSessions[todayKey] = { orangeScore, greenScore, scorers, orangeLineup, greenLineup };
 
+    // Persist the score onto the session row, and each scorer's goals into the goals table.
+    // The lineup/team assignment itself is already persisted via session_availability
+    // (written whenever a player's availability/team was set), so it doesn't need duplicating here.
+    if (typeof currentSessionId !== 'undefined' && currentSessionId && typeof supabaseClient !== 'undefined') {
+      supabaseClient.from('sessions').update({ orange_score: orangeScore, green_score: greenScore }).eq('id', currentSessionId)
+        .then(({ error }) => { if (error) console.error('Failed to save practice score:', error); });
+
+      scorers.forEach(([name, goals]) => {
+        if (!goals) return;
+        const key = Object.keys(playerData).find(k => playerData[k].name === name);
+        const supabaseId = key ? playerData[key].supabaseId : null;
+        if (supabaseId) {
+          supabaseClient.from('goals').insert({ session_id: currentSessionId, player_id: supabaseId, goal_count: goals })
+            .then(({ error }) => { if (error) console.error('Failed to save goal:', error); });
+        }
+      });
+    }
+
     // Refresh every view that depends on goals/clean sheets/performance rating
     if (typeof renderAdminSquadGrid === 'function') renderAdminSquadGrid();
     if (typeof renderSquadPlayerGrid === 'function') renderSquadPlayerGrid();
     if (typeof showTeamFact === 'function') showTeamFact();
+    if (typeof renderTeamOverviewStats === 'function') renderTeamOverviewStats();
+    if (typeof renderDefaulterList === 'function') renderDefaulterList();
     if (typeof currentProfileId !== 'undefined' && document.getElementById('page-player').classList.contains('active')) {
       showPlayer(currentProfileId, profileOrigin);
     }
@@ -4967,6 +6019,10 @@
 
   const navItems = document.querySelectorAll('.nav-item[data-page]');
   function showPage(name) {
+    if (ADMIN_ONLY_PAGES.includes(name) && !isCurrentUserAdmin()) {
+      showAdminBlockedToast();
+      return;
+    }
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     document.getElementById('page-' + name).classList.add('active');
     let highlightTarget = name;
@@ -4977,6 +6033,7 @@
     }
     navItems.forEach(n => n.classList.toggle('active', n.dataset.page === highlightTarget));
     window.scrollTo(0, 0);
+    if (name === 'focus' && typeof loadScheduledMatchesForResult === 'function') loadScheduledMatchesForResult();
   }
   navItems.forEach(item => {
     item.addEventListener('click', () => {
