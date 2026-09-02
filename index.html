@@ -2530,7 +2530,7 @@
       try {
         const { error } = await supabaseClient.from('sessions').insert({
           session_type: 'match', session_date: date, title: title, venue: venue || null,
-          status: 'scheduled', opponent: opponent, opponent_tag: opponentTag
+          status: 'scheduled', opponent: opponent, opponent_tag: opponentTag, kickoff_time: time || null
         });
         if (error) throw error;
       } catch (e) {
@@ -3044,6 +3044,7 @@
           const key = Object.keys(playerData).find(k => playerData[k].supabaseId === row.player_id);
           if (key) {
             playerData[key].available = row.available;
+            playerData[key].statusReason = row.reason || (row.available ? 'available' : 'not-available');
             if (row.team) playerData[key].team = row.team;
             if (row.checkin_feeling) playerData[key].todayCheckinFeeling = row.checkin_feeling;
           }
@@ -3054,6 +3055,7 @@
     if (typeof renderTeamOverviewStats === 'function') renderTeamOverviewStats();
     if (typeof renderDefaulterList === 'function') renderDefaulterList();
     if (typeof renderTodaysTeamCheckins === 'function') renderTodaysTeamCheckins();
+    if (typeof renderPersonalStatusFromReal === 'function') renderPersonalStatusFromReal();
       }
     } catch (e) {
       console.error('loadSessionAvailabilityFromSupabase failed:', e);
@@ -3807,7 +3809,8 @@
     const key = currentLoggedInKey;
     if (playerData[key]) {
       playerData[key].available = !isNotAvailable;
-      if (typeof persistAvailability === 'function') persistAvailability(key);
+      const reason = isNotAvailable ? (reasonType || 'not-available') : (label === 'Informed late' ? 'informed-late' : 'available');
+      if (typeof persistAvailability === 'function') persistAvailability(key, reason);
     }
     if (typeof renderScheduleAttendanceAndTurnout === 'function') renderScheduleAttendanceAndTurnout();
     if (typeof renderSquadDepth === 'function') renderSquadDepth();
@@ -3815,6 +3818,31 @@
     if (typeof renderDashboardUpcomingEvents === 'function') renderDashboardUpcomingEvents();
     if (typeof renderDashboardTeamSplit === 'function') renderDashboardTeamSplit();
     if (typeof renderFocusSplitList === 'function') renderFocusSplitList();
+  }
+
+  function renderPersonalStatusFromReal() {
+    const p = playerData[currentLoggedInKey];
+    if (!p) return;
+    const reason = p.statusReason || (p.available ? 'available' : null);
+    if (!reason) return; // never marked anything yet \u2014 leave the default "Unconfirmed" state as-is
+
+    const label = reason === 'informed-late' ? 'Informed late' : (p.available ? 'Available' : 'Not available');
+    const isNotAvailable = !p.available;
+    updatePersonalStatusTile(label, isNotAvailable, reason === 'injury' ? 'injury' : undefined);
+
+    // Also reflect the correct button as selected, and the status pill on the session card.
+    document.querySelectorAll('.avail-btn').forEach(b => b.classList.remove('selected-yes', 'selected-no'));
+    const btns = Array.from(document.querySelectorAll('.avail-btn'));
+    const buttonTextForReason = reason === 'informed-late' ? 'Inform late' : (isNotAvailable ? 'Not available' : 'Available');
+    const matchBtn = btns.find(b => b.textContent.trim() === buttonTextForReason);
+    if (matchBtn) matchBtn.classList.add(isNotAvailable ? 'selected-no' : 'selected-yes');
+
+    const pill = document.getElementById('status-sess1');
+    if (pill) {
+      pill.textContent = label;
+      pill.classList.remove('pill-confirmed', 'pill-cancelled');
+      pill.classList.add(isNotAvailable ? 'pill-cancelled' : 'pill-confirmed');
+    }
   }
 
   function updatePersonalStatusTile(label, isNotAvailable, reasonType) {
@@ -5845,11 +5873,13 @@
     persistAvailability(key);
   }
 
-  function persistAvailability(key) {
+  function persistAvailability(key, reason) {
     const p = playerData[key];
+    if (reason !== undefined) p.statusReason = reason;
     if (typeof currentSessionId !== 'undefined' && currentSessionId && p.supabaseId && typeof supabaseClient !== 'undefined') {
       supabaseClient.from('session_availability').upsert({
-        session_id: currentSessionId, player_id: p.supabaseId, available: p.available, team: p.team
+        session_id: currentSessionId, player_id: p.supabaseId, available: p.available, team: p.team,
+        reason: p.statusReason || null
       }, { onConflict: 'session_id,player_id' }).then(({ error }) => {
         if (error) console.error('Failed to save availability:', error);
       });
@@ -6048,7 +6078,7 @@
           const mDate = new Date(m.session_date);
           events.push({
             date: mDate, title: m.title,
-            meta: mDate.toLocaleDateString('en-GB', { weekday: 'short' }) + (m.venue ? ' \u00B7 ' + m.venue : ''),
+            meta: mDate.toLocaleDateString('en-GB', { weekday: 'short' }) + (m.kickoff_time ? ' \u00B7 ' + (typeof formatTime12h === 'function' ? formatTime12h(m.kickoff_time) : m.kickoff_time) : '') + (m.venue ? ' \u00B7 ' + m.venue : ''),
             cancelled: false
           });
         }
@@ -6263,6 +6293,7 @@
       }
       const m = data[0];
       const dateLabel = new Date(m.session_date).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
+      const timeLabel = m.kickoff_time ? (typeof formatTime12h === 'function' ? formatTime12h(m.kickoff_time) : m.kickoff_time) : '';
       const tag = m.opponent_tag || (typeof generateOpponentTag === 'function' ? generateOpponentTag(m.opponent) : '');
       const color = (typeof colorForOpponent === 'function') ? colorForOpponent(m.opponent) : 'var(--blue)';
 
@@ -6272,7 +6303,7 @@
             <div class="card-title">${m.title}</div>
             <span class="status-pill pill-confirmed">Scheduled</span>
           </div>
-          <div style="font-size:12.5px;color:var(--muted);margin-bottom:6px;">${dateLabel}${m.venue ? ' \u00B7 ' + m.venue : ''}</div>
+          <div style="font-size:12.5px;color:var(--muted);margin-bottom:6px;">${dateLabel}${timeLabel ? ' \u00B7 ' + timeLabel : ''}${m.venue ? ' \u00B7 ' + m.venue : ''}</div>
           <div style="display:flex;align-items:center;gap:10px;margin-top:10px;">
             <div class="score-badge" style="background:${color};width:40px;height:40px;font-size:13px;">${tag}</div>
             <div style="font-size:13px;color:var(--muted);">Result and lineup will show here once the match is played and recorded.</div>
