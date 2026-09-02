@@ -602,9 +602,14 @@
         </svg>
       </div>
       <div style="font-size:18px;font-weight:700;">Pro Squad - Ultimate RFC</div>
-      <div style="font-size:12.5px;color:var(--muted);margin-top:4px;">Enter your phone number to continue</div>
+      <div style="font-size:12.5px;color:var(--muted);margin-top:4px;" id="login-subtitle">Enter your phone number to continue</div>
     </div>
-    <input type="tel" id="login-phone-input" placeholder="Phone number" style="width:100%;padding:12px 14px;border-radius:10px;border:1px solid var(--line);font-size:14px;margin-bottom:10px;box-sizing:border-box;">
+    <input type="tel" id="login-phone-input" placeholder="Phone number" oninput="onLoginPhoneChanged()" style="width:100%;padding:12px 14px;border-radius:10px;border:1px solid var(--line);font-size:14px;margin-bottom:10px;box-sizing:border-box;">
+
+    <input type="password" id="login-password-input" placeholder="Password" style="display:none;width:100%;padding:12px 14px;border-radius:10px;border:1px solid var(--line);font-size:14px;margin-bottom:10px;box-sizing:border-box;">
+    <input type="password" id="login-password-confirm-input" placeholder="Confirm password" style="display:none;width:100%;padding:12px 14px;border-radius:10px;border:1px solid var(--line);font-size:14px;margin-bottom:10px;box-sizing:border-box;">
+    <div id="login-set-password-hint" style="display:none;font-size:11.5px;color:var(--muted);margin:-4px 0 10px;">First time logging in \u2014 set a password to protect your account. Forgot it later? Ask your coach to reset it.</div>
+
     <div id="login-error" style="display:none;color:var(--red);font-size:12.5px;margin-bottom:10px;"></div>
     <button class="btn btn-primary" style="width:100%;justify-content:center;" id="login-submit-btn" onclick="handleLogin()">Continue</button>
     <div id="login-loading" style="display:none;text-align:center;font-size:12.5px;color:var(--muted);margin-top:10px;">Checking&hellip;</div>
@@ -1884,7 +1889,7 @@
           <span style="background:#7A1F2B;color:#fff;font-size:18px;font-weight:700;padding:4px 14px;border-radius:999px;">&#8377;<span id="profile-owed">0</span></span>
         </div>
         <div class="points-label">Points can be redeemed to clear fines &middot; balance resets to zero once used</div>
-        <div class="points-rules">+10 attending a session &middot; +10 selected to play a match &middot; &minus;4 no-show &middot; &minus;2 no bibs &middot; &minus;2 late arrival</div>
+        <div class="points-rules">+10 attending a session (+8 net if late or no bibs) &middot; +10 selected to play a match &middot; &minus;4 no-show</div>
       </div>
       <button class="btn" id="redeem-points-btn" onclick="redeemPoints()" style="background:var(--green);color:#fff;border-color:var(--green);">Redeem points to clear fine</button>
     </div>
@@ -2219,10 +2224,10 @@
       <div class="form-group">
         <label class="form-label">Invite players</label>
         <select class="form-select">
-          <option>All available players (18)</option>
+          <option id="new-match-all-available-option">All available players</option>
           <option>Select manually</option>
         </select>
-        <div class="form-hint">Players will get a notification and can confirm availability from their Schedule page.</div>
+        <div class="form-hint">Players can mark their availability for this match from their Schedule page.</div>
       </div>
       <div class="form-group">
         <label class="form-label">Notes for the squad (optional)</label>
@@ -2300,6 +2305,15 @@
     const cutoff = new Date(getSessionStartTime());
     cutoff.setHours(cutoff.getHours() - 2);
     return new Date() >= cutoff;
+  }
+
+  function formatDateKey(d) {
+    // Use local date components, not toISOString() (which converts to UTC and can
+    // shift the date backward by a day in timezones ahead of UTC, like India).
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return year + '-' + month + '-' + day;
   }
 
   function formatSessionDate(d) {
@@ -2470,6 +2484,11 @@
     const tagInput = document.getElementById('new-match-opponent-tag');
     if (opponentInput) opponentInput.value = '';
     if (tagInput) { tagInput.value = ''; delete tagInput.dataset.userEdited; }
+    const countOption = document.getElementById('new-match-all-available-option');
+    if (countOption) {
+      const available = squadOrder.filter(k => playerData[k].available).length;
+      countOption.textContent = 'All available players (' + available + ')';
+    }
   }
   function generateOpponentTag(name) {
     const words = name.trim().split(/\s+/).filter(Boolean);
@@ -2824,7 +2843,7 @@
 
   // Tracks what the current player has submitted for today's session, so it can surface in Schedule's past-session lookup
   const todaySubmissions = { preCheckin: null, postFeedback: null };
-  const TODAY_KEY = new Date().toISOString().slice(0, 10);
+  const TODAY_KEY = formatDateKey(new Date());
 
   function refreshTodaySessionInPastLookup() {
     if (typeof pastSessions === 'undefined') return;
@@ -3064,6 +3083,24 @@
     if (typeof updateAdminUIVisibility === 'function') updateAdminUIVisibility();
   }
 
+  let loginState = 'phone'; // 'phone' | 'set-password' | 'enter-password'
+  let loginMatchedPlayer = null;
+
+  function onLoginPhoneChanged() {
+    if (loginState !== 'phone') {
+      loginState = 'phone';
+      loginMatchedPlayer = null;
+      document.getElementById('login-password-input').style.display = 'none';
+      document.getElementById('login-password-input').value = '';
+      document.getElementById('login-password-confirm-input').style.display = 'none';
+      document.getElementById('login-password-confirm-input').value = '';
+      document.getElementById('login-set-password-hint').style.display = 'none';
+      document.getElementById('login-subtitle').textContent = 'Enter your phone number to continue';
+      document.getElementById('login-submit-btn').textContent = 'Continue';
+      document.getElementById('login-phone-input').readOnly = false;
+    }
+  }
+
   async function handleLogin() {
     const input = document.getElementById('login-phone-input');
     const errorEl = document.getElementById('login-error');
@@ -3082,27 +3119,87 @@
     loadingEl.style.display = 'block';
 
     try {
-      const { data: matchedRows, error: matchError } = await supabaseClient
-        .from('players')
-        .select('*')
-        .eq('phone', phone)
-        .limit(1);
+      if (loginState === 'phone') {
+        const { data: matchedRows, error: matchError } = await supabaseClient
+          .from('players').select('*').eq('phone', phone).limit(1);
+        if (matchError) throw matchError;
 
-      if (matchError) throw matchError;
+        if (!matchedRows || matchedRows.length === 0) {
+          errorEl.textContent = 'Phone number not found. Ask your coach to add you first.';
+          errorEl.style.display = 'block';
+          btn.disabled = false;
+          loadingEl.style.display = 'none';
+          return;
+        }
 
-      if (!matchedRows || matchedRows.length === 0) {
-        errorEl.textContent = 'Phone number not found. Ask your coach to add you first.';
-        errorEl.style.display = 'block';
+        loginMatchedPlayer = matchedRows[0];
+        input.readOnly = true;
         btn.disabled = false;
         loadingEl.style.display = 'none';
+
+        if (!loginMatchedPlayer.password) {
+          loginState = 'set-password';
+          document.getElementById('login-subtitle').textContent = 'Welcome, ' + loginMatchedPlayer.name.split(' ')[0] + '!';
+          document.getElementById('login-password-input').style.display = 'block';
+          document.getElementById('login-password-input').placeholder = 'Set a password';
+          document.getElementById('login-password-confirm-input').style.display = 'block';
+          document.getElementById('login-set-password-hint').style.display = 'block';
+          document.getElementById('login-submit-btn').textContent = 'Set password & continue';
+          document.getElementById('login-password-input').focus();
+        } else {
+          loginState = 'enter-password';
+          document.getElementById('login-subtitle').textContent = 'Welcome back, ' + loginMatchedPlayer.name.split(' ')[0] + '!';
+          document.getElementById('login-password-input').style.display = 'block';
+          document.getElementById('login-password-input').placeholder = 'Password';
+          document.getElementById('login-submit-btn').textContent = 'Log in';
+          document.getElementById('login-password-input').focus();
+        }
         return;
+      }
+
+      if (loginState === 'set-password') {
+        const pw = document.getElementById('login-password-input').value;
+        const confirm = document.getElementById('login-password-confirm-input').value;
+        if (!pw || pw.length < 4) {
+          errorEl.textContent = 'Password must be at least 4 characters.';
+          errorEl.style.display = 'block';
+          btn.disabled = false;
+          loadingEl.style.display = 'none';
+          return;
+        }
+        if (pw !== confirm) {
+          errorEl.textContent = 'Passwords do not match.';
+          errorEl.style.display = 'block';
+          btn.disabled = false;
+          loadingEl.style.display = 'none';
+          return;
+        }
+
+        const { error: saveErr } = await supabaseClient.from('players').update({ password: pw }).eq('id', loginMatchedPlayer.id);
+        if (saveErr) throw saveErr;
+        loginMatchedPlayer.password = pw;
+      } else if (loginState === 'enter-password') {
+        const pw = document.getElementById('login-password-input').value;
+        if (!pw) {
+          errorEl.textContent = 'Enter your password.';
+          errorEl.style.display = 'block';
+          btn.disabled = false;
+          loadingEl.style.display = 'none';
+          return;
+        }
+        if (pw !== loginMatchedPlayer.password) {
+          errorEl.textContent = 'Incorrect password. Ask your coach to reset it if you\u2019ve forgotten.';
+          errorEl.style.display = 'block';
+          btn.disabled = false;
+          loadingEl.style.display = 'none';
+          return;
+        }
       }
 
       const { data: allRows, error: rosterError } = await supabaseClient.from('players').select('*');
       if (rosterError) throw rosterError;
 
-      loadRosterIntoApp(allRows, matchedRows[0]);
-
+      loadRosterIntoApp(allRows, loginMatchedPlayer);
       document.getElementById('login-screen').style.display = 'none';
     } catch (e) {
       errorEl.textContent = 'Could not reach the server. Check your connection and try again.';
@@ -3274,6 +3371,9 @@
     if (manageGroup) manageGroup.style.display = isCurrentUserAdmin() ? 'flex' : 'none';
     renderSidebarUserCard();
     if (typeof setLockDemo === 'function') setLockDemo();
+    const cancelLink = document.getElementById('cancel-sess1-link');
+    if (cancelLink) cancelLink.style.display = isCurrentUserAdmin() ? 'inline-flex' : 'none';
+    if (typeof renderUpcomingSessionsList === 'function') renderUpcomingSessionsList();
   }
 
   function renderSidebarUserCard() {
@@ -3387,7 +3487,7 @@
         return;
       }
 
-      const todayStr = new Date().toISOString().slice(0, 10);
+      const todayStr = formatDateKey(new Date());
       select.innerHTML = attendanceSessionsCache.map(s => {
         const label = new Date(s.session_date).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
         const tag = s.session_date === todayStr ? ' (today)' : (s.session_date < todayStr ? ' (past)' : ' (upcoming)');
@@ -3485,7 +3585,7 @@
   async function saveAttendance() {
     const sessionDate = selectedAttendanceSessionDate ? new Date(selectedAttendanceSessionDate + 'T00:00:00') : new Date();
     const dateLabel = sessionDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
-    const dateKey = selectedAttendanceSessionDate || new Date().toISOString().slice(0, 10);
+    const dateKey = selectedAttendanceSessionDate || formatDateKey(new Date());
     const targetSessionId = selectedAttendanceSessionId || currentSessionId;
     let finesCreated = 0, presentCount = 0;
     const dbWrites = [];
@@ -3603,13 +3703,19 @@
     setTimeout(() => banner.remove(), 3500);
   }
 
-  function cancelRecurringSession(id) {
+  async function cancelRecurringSession(id) {
+    if (!isCurrentUserAdmin()) {
+      if (typeof showAdminBlockedToast === 'function') showAdminBlockedToast();
+      return;
+    }
     const pill = document.getElementById('session-state-' + id) || document.getElementById('status-' + id);
     const link = document.getElementById('cancel-' + id + '-link');
     const controls = document.getElementById(id + '-player-controls');
     if (!pill || !link) return;
 
     const isCancelled = pill.classList.contains('pill-cancelled');
+    const newStatus = isCancelled ? 'scheduled' : 'cancelled';
+
     if (isCancelled) {
       pill.textContent = 'Scheduled';
       pill.classList.remove('pill-cancelled');
@@ -3617,10 +3723,6 @@
       link.innerHTML = '<i class="ti ti-calendar-x" aria-hidden="true"></i> Cancel this session &middot; coach only';
       link.style.color = 'var(--red)';
       if (controls) controls.style.display = 'block';
-      if (id === 'sess-thu') {
-        const meta = document.getElementById('sess-thu-meta');
-        if (meta) meta.textContent = 'Thu, 20 Aug \u00B7 8:00 \u2013 10:00 PM \u00B7 Turf Ground 2';
-      }
     } else {
       pill.textContent = 'Cancelled';
       pill.classList.remove('pill-confirmed');
@@ -3628,11 +3730,28 @@
       link.innerHTML = '<i class="ti ti-calendar-check" aria-hidden="true"></i> Reinstate this session &middot; coach only';
       link.style.color = 'var(--green)';
       if (controls) controls.style.display = 'none';
-      if (id === 'sess-thu') {
-        const meta = document.getElementById('sess-thu-meta');
-        if (meta) meta.textContent = 'Thu, 20 Aug \u00B7 8:00 \u2013 10:00 PM \u00B7 Ground maintenance \u00B7 No session';
+    }
+
+    // Keep the Dashboard's Upcoming Event list and the Upcoming Sessions card in sync,
+    // since this same session may also appear there.
+    if (id === 'sess1' && typeof currentSessionMeta !== 'undefined') {
+      const nextDate = (typeof getNextSessionDate === 'function') ? getNextSessionDate() : null;
+      if (nextDate && typeof formatDateKey === 'function') {
+        sessionCancelledMap[formatDateKey(nextDate)] = (newStatus === 'cancelled');
       }
     }
+
+    if (typeof currentSessionId !== 'undefined' && currentSessionId && typeof supabaseClient !== 'undefined') {
+      try {
+        const { error } = await supabaseClient.from('sessions').update({ status: newStatus }).eq('id', currentSessionId);
+        if (error) console.error('Failed to save session cancellation:', error);
+      } catch (e) {
+        console.error('Failed to save session cancellation:', e);
+      }
+    }
+
+    if (typeof renderUpcomingSessionsList === 'function') renderUpcomingSessionsList();
+    if (typeof renderDashboardUpcomingEvents === 'function') renderDashboardUpcomingEvents();
   }
 
   function selectAvail(btn, sessionId, isNotAvailable, label) {
@@ -5214,7 +5333,7 @@
 
     let values = [];
     try {
-      const todayStr = new Date().toISOString().slice(0, 10);
+      const todayStr = formatDateKey(new Date());
       const { data: sessions, error: sessErr } = await supabaseClient
         .from('sessions').select('id, session_date').eq('session_type', 'practice')
         .lt('session_date', todayStr).order('session_date', { ascending: false }).limit(5);
@@ -5875,18 +5994,29 @@
     return dates;
   }
 
-  function formatDateKey(d) {
-    return d.toISOString().slice(0, 10);
-  }
-
   async function renderDashboardUpcomingEvents() {
     const container = document.getElementById('dashboard-upcoming-events');
     if (!container) return;
 
     const events = [];
+    const upcomingDates = getUpcomingSessionDates(2);
+    const dateKeys = upcomingDates.map(formatDateKey);
+
+    // Pull real status for these dates from Supabase so a cancellation made on another
+    // device (or before this page loaded) is reflected correctly, not just local state.
+    if (typeof supabaseClient !== 'undefined') {
+      try {
+        const { data } = await supabaseClient
+          .from('sessions').select('session_date, status').eq('session_type', 'practice').in('session_date', dateKeys);
+        (data || []).forEach(row => { sessionCancelledMap[row.session_date] = (row.status === 'cancelled'); });
+        if (typeof renderUpcomingSessionsList === 'function') renderUpcomingSessionsList();
+      } catch (e) {
+        console.error('Failed to load real session status for dashboard:', e);
+      }
+    }
 
     // Next 2 practice sessions (real, respects cancelled state)
-    getUpcomingSessionDates(2).forEach(d => {
+    upcomingDates.forEach(d => {
       const key = formatDateKey(d);
       events.push({
         date: d, title: 'Practice \u00B7 Regular',
@@ -5898,7 +6028,7 @@
     // Next real scheduled match, if any
     if (typeof supabaseClient !== 'undefined') {
       try {
-        const todayStr = new Date().toISOString().slice(0, 10);
+        const todayStr = formatDateKey(new Date());
         const { data } = await supabaseClient
           .from('sessions').select('*').eq('session_type', 'match').eq('status', 'scheduled')
           .gte('session_date', todayStr).order('session_date', { ascending: true }).limit(1);
@@ -5957,16 +6087,44 @@
           </div>
           <div style="display:flex;align-items:center;gap:10px;">
             <span class="status-pill ${cancelled ? 'pill-cancelled' : 'pill-confirmed'}">${cancelled ? 'Cancelled' : 'Scheduled'}</span>
-            <span class="card-link" style="font-size:11px;color:${cancelled ? 'var(--green)' : 'var(--red)'};" onclick="toggleUpcomingSessionCancelled('${key}')">${cancelled ? 'Reinstate' : 'Cancel'} &middot; coach only</span>
+            ${isCurrentUserAdmin() ? `<span class="card-link" style="font-size:11px;color:${cancelled ? 'var(--green)' : 'var(--red)'};" onclick="toggleUpcomingSessionCancelled('${key}')">${cancelled ? 'Reinstate' : 'Cancel'} &middot; coach only</span>` : ''}
           </div>
         </div>
       `;
     }).join('');
   }
 
-  function toggleUpcomingSessionCancelled(key) {
-    sessionCancelledMap[key] = !sessionCancelledMap[key];
+  async function toggleUpcomingSessionCancelled(key) {
+    if (!isCurrentUserAdmin()) {
+      if (typeof showAdminBlockedToast === 'function') showAdminBlockedToast();
+      return;
+    }
+    const newCancelled = !sessionCancelledMap[key];
+    sessionCancelledMap[key] = newCancelled;
+
+    if (typeof supabaseClient !== 'undefined') {
+      try {
+        const { data: existing, error: findErr } = await supabaseClient
+          .from('sessions').select('id').eq('session_date', key).eq('session_type', 'practice').limit(1);
+        if (findErr) throw findErr;
+
+        const newStatus = newCancelled ? 'cancelled' : 'scheduled';
+        if (existing && existing.length) {
+          const { error } = await supabaseClient.from('sessions').update({ status: newStatus }).eq('id', existing[0].id);
+          if (error) throw error;
+        } else {
+          const { error } = await supabaseClient.from('sessions').insert({
+            session_type: 'practice', session_date: key, title: 'Practice \u00B7 Regular', venue: 'Turf Ground 2', status: newStatus
+          });
+          if (error) throw error;
+        }
+      } catch (e) {
+        console.error('Failed to save session cancellation:', e);
+      }
+    }
+
     renderUpcomingSessionsList();
+    if (typeof renderDashboardUpcomingEvents === 'function') renderDashboardUpcomingEvents();
   }
 
   function renderSingleUpcomingSessionDate() {
@@ -6082,7 +6240,7 @@
     const container = document.getElementById('upcoming-match-container');
     if (!container || typeof supabaseClient === 'undefined') return;
     try {
-      const todayStr = new Date().toISOString().slice(0, 10);
+      const todayStr = formatDateKey(new Date());
       const { data, error } = await supabaseClient
         .from('sessions').select('*').eq('session_type', 'match').eq('status', 'scheduled')
         .gte('session_date', todayStr).order('session_date', { ascending: true }).limit(1);
@@ -6391,7 +6549,7 @@
     const orangeLineup = getAvailableSquad().filter(p => p.team === 'A').map(p => [p.pos, p.name]);
     const greenLineup = getAvailableSquad().filter(p => p.team === 'B').map(p => [p.pos, p.name]);
 
-    const todayKey = new Date().toISOString().slice(0, 10);
+    const todayKey = formatDateKey(new Date());
     practiceSessions[todayKey] = { orangeScore, greenScore, scorers, orangeLineup, greenLineup };
 
     // Persist the score onto the session row, and each scorer's goals into the goals table.
