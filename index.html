@@ -2953,6 +2953,17 @@
         }
       });
 
+      // Auto-show the most recent real past match, instead of leaving the date picker blank.
+      const realMatchDates = Object.keys(pastMatches).sort();
+      if (realMatchDates.length) {
+        const latestMatch = realMatchDates[realMatchDates.length - 1];
+        const matchDateInput = document.getElementById('past-match-date-input');
+        if (matchDateInput) {
+          matchDateInput.value = latestMatch;
+          if (typeof lookupPastMatch === 'function') lookupPastMatch();
+        }
+      }
+
       // Refresh every view that depends on real goals/clean sheets/performance rating
       if (typeof renderAdminSquadGrid === 'function') renderAdminSquadGrid();
       if (typeof renderSquadPlayerGrid === 'function') renderSquadPlayerGrid();
@@ -3268,7 +3279,7 @@
 
       Promise.all([
         supabaseClient.from('fines').select('*'),
-        supabaseClient.from('attendance').select('*, sessions(session_date, title)')
+        supabaseClient.from('attendance').select('*, sessions(session_date, title, venue)')
       ]).then(([finesRes, attRes]) => {
         if (finesRes.error) { console.error('Failed to load fines:', finesRes.error); return; }
         (finesRes.data || []).forEach(f => {
@@ -3286,6 +3297,7 @@
 
         if (attRes.error) { console.error('Failed to load attendance history:', attRes.error); }
         else {
+          const bySessionDate = {}; // reconstruct pastSessions from the same real rows
           (attRes.data || []).forEach(a => {
             const key = supabaseIdToKey[a.player_id];
             if (!key) return;
@@ -3297,7 +3309,25 @@
               badge: a.status === 'Present' ? 'badge-paid' : 'badge-unpaid',
               _sortDate: sessionDate
             });
+
+            if (sessionDate) {
+              if (!bySessionDate[sessionDate]) {
+                bySessionDate[sessionDate] = {
+                  title: (a.sessions && a.sessions.title) || 'Practice \u00B7 Regular',
+                  meta: new Date(sessionDate).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' }) + ' \u00B7 8:00 \u2013 10:00 PM' + ((a.sessions && a.sessions.venue) ? ' \u00B7 ' + a.sessions.venue : ''),
+                  present: [], late: [], absent: []
+                };
+              }
+              const bucket = bySessionDate[sessionDate];
+              const detail = a.detail_status;
+              if (detail === 'late') bucket.late.push(playerData[key].name);
+              else if (a.status === 'Absent') bucket.absent.push(playerData[key].name);
+              else bucket.present.push(playerData[key].name);
+            }
           });
+          if (typeof pastSessions !== 'undefined') {
+            Object.keys(bySessionDate).forEach(d => { pastSessions[d] = bySessionDate[d]; });
+          }
           squadOrder.forEach(k => {
             const p = playerData[k];
             p.attendanceHistory.sort((a, b) => (b._sortDate || '').localeCompare(a._sortDate || ''));
@@ -3320,6 +3350,19 @@
         if (typeof renderSquadPlayerGrid === 'function') renderSquadPlayerGrid();
 
         if (typeof loadHistoricalMatchDataFromSupabase === 'function') loadHistoricalMatchDataFromSupabase();
+
+        // Auto-show the most recent real past session, instead of leaving the date picker blank.
+        if (typeof pastSessions !== 'undefined') {
+          const realDates = Object.keys(pastSessions).sort();
+          if (realDates.length) {
+            const latest = realDates[realDates.length - 1];
+            const dateInput = document.getElementById('past-date-input');
+            if (dateInput) {
+              dateInput.value = latest;
+              if (typeof lookupPastSession === 'function') lookupPastSession();
+            }
+          }
+        }
       }).catch(e => console.error('Failed to load fines/attendance history:', e));
     }
 
