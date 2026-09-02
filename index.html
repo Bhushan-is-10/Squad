@@ -3801,9 +3801,20 @@
       pill.classList.remove('pill-confirmed', 'pill-cancelled');
       pill.classList.add(isNotAvailable ? 'pill-cancelled' : 'pill-confirmed');
     }
-    updateAttendanceImpact(sessionId, isNotAvailable);
-    updateSessionTurnout(sessionId, isNotAvailable, label);
     updatePersonalStatusTile(label, isNotAvailable, reasonType);
+
+    // Actually update and persist real availability, instead of the old fake local-only simulation.
+    const key = currentLoggedInKey;
+    if (playerData[key]) {
+      playerData[key].available = !isNotAvailable;
+      if (typeof persistAvailability === 'function') persistAvailability(key);
+    }
+    if (typeof renderScheduleAttendanceAndTurnout === 'function') renderScheduleAttendanceAndTurnout();
+    if (typeof renderSquadDepth === 'function') renderSquadDepth();
+    if (typeof renderTeamOverviewStats === 'function') renderTeamOverviewStats();
+    if (typeof renderDashboardUpcomingEvents === 'function') renderDashboardUpcomingEvents();
+    if (typeof renderDashboardTeamSplit === 'function') renderDashboardTeamSplit();
+    if (typeof renderFocusSplitList === 'function') renderFocusSplitList();
   }
 
   function updatePersonalStatusTile(label, isNotAvailable, reasonType) {
