@@ -1636,6 +1636,23 @@
 
     <div class="card" style="margin-bottom:20px;">
       <div class="card-header">
+        <div class="card-title">Select match squad</div>
+      </div>
+      <div style="font-size:12.5px;color:var(--muted);margin-bottom:14px;">Pick a match, then check off who's playing. No player self-reporting needed \u2014 this is entirely your call.</div>
+
+      <div class="form-group" style="margin-bottom:14px;">
+        <label class="form-label">Match</label>
+        <select class="form-select" id="match-squad-select" onchange="onMatchSquadSelected()">
+          <option value="">Loading scheduled matches&hellip;</option>
+        </select>
+      </div>
+
+      <div id="match-squad-roster-list" style="margin-bottom:14px;"></div>
+      <button class="btn btn-primary" onclick="saveMatchSquad()"><i class="ti ti-device-floppy" aria-hidden="true"></i> Save squad</button>
+    </div>
+
+    <div class="card" style="margin-bottom:20px;">
+      <div class="card-header">
         <div class="card-title">Record match result</div>
       </div>
       <div style="font-size:12.5px;color:var(--muted);margin-bottom:14px;">Pick a scheduled match and log the final result so goals and clean sheets count toward performance rating.</div>
@@ -3522,8 +3539,8 @@
     if (!select || typeof supabaseClient === 'undefined') return;
     try {
       const { data, error } = await supabaseClient
-        .from('sessions').select('id, session_date, title, status').eq('session_type', 'practice')
-        .order('session_date', { ascending: false }).limit(8);
+        .from('sessions').select('id, session_date, title, status, session_type')
+        .order('session_date', { ascending: false }).limit(10);
       if (error) throw error;
 
       attendanceSessionsCache = data || [];
@@ -6478,6 +6495,97 @@
 
   let scheduledMatchesCache = [];
 
+  let matchSquadSelectId = null;
+
+  async function loadMatchSquadOptions() {
+    const select = document.getElementById('match-squad-select');
+    if (!select || typeof supabaseClient === 'undefined') return;
+    try {
+      const { data, error } = await supabaseClient
+        .from('sessions').select('*').eq('session_type', 'match').order('session_date', { ascending: false });
+      if (error) throw error;
+      if (!data || !data.length) {
+        select.innerHTML = '<option value="">No matches scheduled yet</option>';
+        return;
+      }
+      select.innerHTML = data.map(m => `<option value="${m.id}">${m.title} \u00B7 ${m.session_date}</option>`).join('');
+      matchSquadSelectId = data[0].id;
+      await renderMatchSquadRoster();
+    } catch (e) {
+      console.error('Failed to load matches for squad selection:', e);
+      select.innerHTML = '<option value="">Could not load matches</option>';
+    }
+  }
+
+  async function onMatchSquadSelected() {
+    matchSquadSelectId = document.getElementById('match-squad-select').value;
+    await renderMatchSquadRoster();
+  }
+
+  async function renderMatchSquadRoster() {
+    const container = document.getElementById('match-squad-roster-list');
+    if (!container || !matchSquadSelectId) return;
+
+    let selectedIds = new Set();
+    if (typeof supabaseClient !== 'undefined') {
+      try {
+        const { data } = await supabaseClient
+          .from('session_availability').select('player_id').eq('session_id', matchSquadSelectId).eq('available', true);
+        (data || []).forEach(r => selectedIds.add(r.player_id));
+      } catch (e) {
+        console.error('Failed to load current match squad:', e);
+      }
+    }
+
+    container.innerHTML = squadOrder.map(key => {
+      const p = playerData[key];
+      const checked = selectedIds.has(p.supabaseId);
+      return `
+        <label style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--line);cursor:pointer;">
+          <input type="checkbox" class="match-squad-checkbox" data-key="${key}" ${checked ? 'checked' : ''}>
+          <div class="mini-avatar" style="background:${p.color};">${p.initials}</div>
+          <span>${p.name}</span>
+          <span style="margin-left:auto;font-size:11px;color:var(--muted);">${p.pos}</span>
+        </label>
+      `;
+    }).join('');
+  }
+
+  async function saveMatchSquad() {
+    if (!matchSquadSelectId) {
+      alert('Pick a match first.');
+      return;
+    }
+    const checkboxes = Array.from(document.querySelectorAll('.match-squad-checkbox'));
+    const writes = [];
+    checkboxes.forEach(cb => {
+      const key = cb.dataset.key;
+      const p = playerData[key];
+      if (!p.supabaseId) return;
+      writes.push(
+        supabaseClient.from('session_availability').upsert({
+          session_id: matchSquadSelectId, player_id: p.supabaseId, available: cb.checked, team: 'A'
+        }, { onConflict: 'session_id,player_id' })
+      );
+    });
+
+    try {
+      const results = await Promise.all(writes);
+      const failed = results.filter(r => r.error);
+      if (failed.length) console.error('Some squad selections failed to save:', failed.map(r => r.error));
+    } catch (e) {
+      console.error('Failed to save match squad:', e);
+      alert('Could not save the squad \u2014 check your connection and try again.');
+      return;
+    }
+
+    const banner = document.createElement('div');
+    banner.style.cssText = 'position:fixed;top:24px;left:50%;transform:translateX(-50%);background:var(--green);color:#fff;padding:12px 20px;border-radius:10px;font-size:13px;font-weight:600;z-index:200;box-shadow:0 8px 24px rgba(0,0,0,0.2);';
+    banner.textContent = 'Match squad saved.';
+    document.body.appendChild(banner);
+    setTimeout(() => banner.remove(), 3000);
+  }
+
   async function loadScheduledMatchesForResult() {
     const select = document.getElementById('match-result-select');
     if (!select || typeof supabaseClient === 'undefined') return;
@@ -6704,6 +6812,7 @@
     navItems.forEach(n => n.classList.toggle('active', n.dataset.page === highlightTarget));
     window.scrollTo(0, 0);
     if (name === 'focus' && typeof loadScheduledMatchesForResult === 'function') loadScheduledMatchesForResult();
+    if (name === 'focus' && typeof loadMatchSquadOptions === 'function') loadMatchSquadOptions();
     if (name === 'schedule' && typeof renderScheduleAttendanceAndTurnout === 'function') renderScheduleAttendanceAndTurnout();
     if (name === 'schedule' && typeof loadAttendanceSessionOptions === 'function') loadAttendanceSessionOptions();
     if (name === 'matches') {
