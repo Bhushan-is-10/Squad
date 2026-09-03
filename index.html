@@ -3579,8 +3579,10 @@
   }
 
   async function loadExistingAttendanceForSelectedSession() {
-    // Reset every dropdown to Present, then apply whatever's already recorded for this session (if any),
-    // so re-opening a session you already marked shows what you actually entered, not a blank slate.
+    // Render the correctly filtered rows first (full roster for practice, selected
+    // squad only for matches), THEN reset to Present and apply whatever's already recorded.
+    await renderAttendanceManager();
+
     squadOrder.forEach(key => {
       const select = document.getElementById('am-select-' + key);
       if (select) { select.value = 'present'; applyAmStatus(key, 'present'); }
@@ -3606,10 +3608,31 @@
     }
   }
 
-  function renderAttendanceManager() {
+  async function renderAttendanceManager() {
     const container = document.getElementById('attendance-manager-rows');
     if (!container) return;
-    container.innerHTML = squadOrder.map(key => {
+
+    const currentSession = attendanceSessionsCache.find(s => s.id === selectedAttendanceSessionId);
+    let visibleKeys = squadOrder;
+
+    if (currentSession && currentSession.session_type === 'match' && typeof supabaseClient !== 'undefined') {
+      try {
+        const { data, error } = await supabaseClient
+          .from('session_availability').select('player_id').eq('session_id', currentSession.id).eq('available', true);
+        if (error) throw error;
+        const selectedIds = new Set((data || []).map(r => r.player_id));
+        visibleKeys = squadOrder.filter(k => selectedIds.has(playerData[k].supabaseId));
+      } catch (e) {
+        console.error('Failed to load match squad for Attendance Manager:', e);
+      }
+    }
+
+    if (!visibleKeys.length) {
+      container.innerHTML = `<div style="font-size:12.5px;color:var(--muted);padding:10px 0;">${currentSession && currentSession.session_type === 'match' ? 'No squad selected for this match yet \u2014 use "Select match squad" in Focus setup first.' : 'No players in the squad yet.'}</div>`;
+      return;
+    }
+
+    container.innerHTML = visibleKeys.map(key => {
       const p = playerData[key];
       return `
         <div class="am-row">
@@ -3620,6 +3643,7 @@
               <option value="late">Late arrival</option>
               <option value="no-show">No-show</option>
               <option value="dress-code">Present &middot; no bibs</option>
+              <option value="not-selected">Not selected</option>
             </select>
             <span class="am-fine-tag" id="am-fine-${key}" style="display:none;"></span>
           </div>
@@ -3658,6 +3682,10 @@
       if (!select) return;
       const status = select.value;
       const p = playerData[key];
+
+      // "Not selected" is a genuine no-op: no fine, no points change, no attendance
+      // history entry at all \u2014 as if this session doesn't exist for this player.
+      if (status === 'not-selected') return;
 
       if (status === 'present' || status === 'dress-code') sessionPresent.push(p.name);
       else if (status === 'late') sessionLate.push(p.name);
@@ -6357,17 +6385,34 @@
       const tag = m.opponent_tag || (typeof generateOpponentTag === 'function' ? generateOpponentTag(m.opponent) : '');
       const color = (typeof colorForOpponent === 'function') ? colorForOpponent(m.opponent) : 'var(--blue)';
 
+      let squadHtml = '<div style="font-size:13px;color:var(--muted);">Squad not selected yet.</div>';
+      try {
+        const { data: availData, error: availErr } = await supabaseClient
+          .from('session_availability').select('player_id').eq('session_id', m.id).eq('available', true);
+        if (!availErr && availData && availData.length) {
+          const idToKey = {};
+          squadOrder.forEach(k => { idToKey[playerData[k].supabaseId] = k; });
+          const names = availData.map(r => idToKey[r.player_id]).filter(Boolean).map(k => playerData[k]);
+          squadHtml = names.length
+            ? `<div style="display:flex;flex-wrap:wrap;gap:8px;">${names.map(p => `<span class="scorer-chip"><div class="mini-avatar" style="background:${p.color};width:18px;height:18px;font-size:9px;display:inline-flex;margin-right:4px;">${p.initials}</div>${p.name}</span>`).join('')}</div>`
+            : '<div style="font-size:13px;color:var(--muted);">Squad not selected yet.</div>';
+        }
+      } catch (e) {
+        console.error('Failed to load match squad for upcoming card:', e);
+      }
+
       container.innerHTML = `
         <div class="card">
           <div class="card-header">
             <div class="card-title">${m.title}</div>
             <span class="status-pill pill-confirmed">Scheduled</span>
           </div>
-          <div style="font-size:12.5px;color:var(--muted);margin-bottom:6px;">${dateLabel}${timeLabel ? ' \u00B7 ' + timeLabel : ''}${m.venue ? ' \u00B7 ' + m.venue : ''}</div>
-          <div style="display:flex;align-items:center;gap:10px;margin-top:10px;">
+          <div style="font-size:12.5px;color:var(--muted);margin-bottom:12px;">${dateLabel}${timeLabel ? ' \u00B7 ' + timeLabel : ''}${m.venue ? ' \u00B7 ' + m.venue : ''}</div>
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
             <div class="score-badge" style="background:${color};width:40px;height:40px;font-size:13px;">${tag}</div>
-            <div style="font-size:13px;color:var(--muted);">Result and lineup will show here once the match is played and recorded.</div>
           </div>
+          <div style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.3px;margin-bottom:8px;">Squad</div>
+          ${squadHtml}
         </div>
       `;
     } catch (e) {
@@ -6582,6 +6627,7 @@
     const banner = document.createElement('div');
     banner.style.cssText = 'position:fixed;top:24px;left:50%;transform:translateX(-50%);background:var(--green);color:#fff;padding:12px 20px;border-radius:10px;font-size:13px;font-weight:600;z-index:200;box-shadow:0 8px 24px rgba(0,0,0,0.2);';
     banner.textContent = 'Match squad saved.';
+    if (typeof renderUpcomingMatch === 'function') renderUpcomingMatch();
     document.body.appendChild(banner);
     setTimeout(() => banner.remove(), 3000);
   }
