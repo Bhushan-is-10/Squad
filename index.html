@@ -1185,7 +1185,12 @@
           <div class="past-detail-meta" style="margin-bottom:14px;">vs ${m.opponent} &middot; ${m.venue} &middot; ${m.time}</div>
           <div class="scoreline" style="padding:10px 0;">
             <div class="score-side">
-              <div class="score-badge" style="background:var(--coral);">SPT</div>
+              <div class="score-badge" style="background:var(--coral);display:flex;align-items:center;justify-content:center;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.3" stroke-linejoin="round" style="width:32px;height:32px;" aria-hidden="true">
+                  <path d="M4.5 4.5h15v7.5c0 4.3-3.6 7.3-7.5 9-3.9-1.7-7.5-4.7-7.5-9z"/>
+                  <text x="12" y="13.2" font-size="5.3" font-weight="700" fill="#fff" stroke="none" text-anchor="middle" font-family="Arial, Helvetica, sans-serif">RFC</text>
+                </svg>
+              </div>
               <div class="score-team-name">Our team</div>
               <div class="score-number">${m.ourScore}</div>
             </div>
@@ -2964,9 +2969,15 @@
         } else {
           const lineup = availRows.map(a => {
             const key = supabaseIdToKey[a.player_id];
-            return key ? [posAbbrev(playerData[key].pos), playerData[key].name] : null;
+            if (!key) return null;
+            const lp = playerData[key];
+            return [posAbbrev(lp.pos), lp.name, lp.color, lp.initials];
           }).filter(Boolean);
-          pastMatches[s.session_date] = { ourScore: s.our_score, theirScore: s.their_score, scorers, lineup };
+          pastMatches[s.session_date] = {
+            ourScore: s.our_score, theirScore: s.their_score, scorers, lineup,
+            opponent: s.opponent || 'Opponent', opponentTag: s.opponent_tag || (typeof generateOpponentTag === 'function' ? generateOpponentTag(s.opponent || '') : ''),
+            venue: s.venue || '\u2014', time: s.kickoff_time ? (typeof formatTime12h === 'function' ? formatTime12h(s.kickoff_time) : s.kickoff_time) : '\u2014'
+          };
         }
       });
 
