@@ -4866,9 +4866,10 @@
     document.getElementById('profile-match-goals').textContent = ms.goals;
     document.getElementById('profile-clean-sheets').textContent = ms.cleanSheets;
     document.getElementById('profile-owed').textContent = p.owed;
-    document.getElementById('profile-points-earned').textContent = computeEarnedPoints(p).total;
+    const earnedTotal = computeEarnedPoints(p).total;
+    document.getElementById('profile-points-earned').textContent = earnedTotal;
     document.getElementById('profile-points-redeemed').textContent = p.pointsRedeemed;
-    document.getElementById('profile-points-remaining').textContent = p.points;
+    document.getElementById('profile-points-remaining').textContent = Math.max(0, earnedTotal - p.pointsRedeemed);
     const profileRankInfo = computeRank(id);
     document.getElementById('profile-rank').textContent = '#' + profileRankInfo.rank;
 
