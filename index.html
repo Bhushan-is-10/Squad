@@ -668,7 +668,7 @@
 
     <div class="card" style="margin-bottom:20px;padding:14px 18px;background:linear-gradient(135deg,#eef4fb,#fff);border-color:#d9e7f7;">
       <div style="display:flex;align-items:center;gap:14px;">
-        <div class="profile-avatar" style="width:40px;height:40px;font-size:13px;background:#378ADD;flex-shrink:0;">VS</div>
+        <div class="profile-avatar" id="greeting-avatar" style="width:40px;height:40px;font-size:13px;background:#378ADD;flex-shrink:0;">VS</div>
         <div style="flex:1;min-width:0;">
           <div style="font-size:14px;font-weight:600;" id="greeting-title">Good evening, Vikram!</div>
           <div style="font-size:11.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" id="greeting-tagline">You're 6% away from your best attendance streak &mdash; lace up and show up tonight.</div>
@@ -721,7 +721,7 @@
         </div>
         <div class="stat-value" id="team-stat-available">0</div>
         <div style="position:relative;">
-          <div class="stat-label">Available today</div>
+          <div class="stat-label" id="available-today-label">Available today</div>
           <div style="position:absolute;right:0;bottom:0;display:flex;flex-direction:column;align-items:flex-end;gap:1px;">
             <svg width="42" height="12" viewBox="0 0 42 12" id="available-trend-svg"></svg>
             <div class="trend-label">Last 5 sessions</div>
@@ -2645,7 +2645,7 @@
       const items = blocks.map(b => `
         <div class="focus-item" style="border-color:${meta.color};">
           <i class="ti ${meta.icon}" style="color:${meta.color};" aria-hidden="true"></i>
-          <div><div class="focus-desc">${b.title}</div></div>
+          <div><div class="focus-desc">${b.title}</div>${b.desc ? `<div style="font-size:11.5px;color:var(--muted);margin-top:2px;">${b.desc}</div>` : ''}</div>
           <span class="block-dur" style="margin-left:auto;">${b.dur}</span>
         </div>
       `).join('');
@@ -5568,6 +5568,11 @@
     const ratingEl = document.getElementById('greeting-rating');
     const taglineEl = document.getElementById('greeting-tagline');
     const titleEl = document.getElementById('greeting-title');
+    const avatarEl = document.getElementById('greeting-avatar');
+    if (avatarEl && self) {
+      avatarEl.textContent = self.initials;
+      avatarEl.style.background = self.color;
+    }
     if (titleEl && self) {
       const hour = new Date().getHours();
       const timeGreeting = hour < 12 ? 'Good morning' : (hour < 17 ? 'Good afternoon' : 'Good evening');
@@ -6463,6 +6468,12 @@
 
     const availableCount = squadOrder.filter(k => playerData[k].available).length;
     availableEl.textContent = availableCount;
+
+    const availableLabelEl = document.getElementById('available-today-label');
+    if (availableLabelEl && typeof getNextSessionDate === 'function' && typeof isSameDate === 'function') {
+      const isSessionToday = isSameDate(getNextSessionDate(), new Date());
+      availableLabelEl.textContent = isSessionToday ? 'Available today' : 'Upcoming session count';
+    }
 
     const attendancePcts = squadOrder.map(k => parseInt(playerData[k].attendance) || 0);
     const avgAttendance = attendancePcts.length ? Math.round(attendancePcts.reduce((a, b) => a + b, 0) / attendancePcts.length) : 0;
