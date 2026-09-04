@@ -662,7 +662,15 @@
     <div class="page-header">
       <div>
         <div class="page-title">Dashboard</div>
-        <div class="page-sub">Tuesday, 18 August &middot; here's what's happening with your squad</div>
+        <div class="page-sub"><span id="todayDate"></span> &middot; here's what's happening with your squad</div>
+       <script>
+  document.getElementById('todayDate').textContent =
+    new Date().toLocaleDateString('en-IN', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long'
+    });
+       </script>
       </div>
     </div>
 
