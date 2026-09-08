@@ -662,15 +662,7 @@
     <div class="page-header">
       <div>
         <div class="page-title">Dashboard</div>
-        <div class="page-sub"><span id="todayDate"></span> &middot; here's what's happening with your squad</div>
-       <script>
-  document.getElementById('todayDate').textContent =
-    new Date().toLocaleDateString('en-IN', {
-      weekday: 'long',
-      day: 'numeric',
-      month: 'long'
-    });
-       </script>
+        <div class="page-sub" id="dashboard-date-sub">Tuesday, 18 August &middot; here's what's happening with your squad</div>
       </div>
     </div>
 
@@ -1129,6 +1121,7 @@
         <div class="past-detail-card">
           <div class="past-detail-title">${s.title}</div>
           <div class="past-detail-meta">${s.meta}</div>
+          ${(s.orangeScore != null && s.greenScore != null) ? `<div style="display:flex;align-items:center;gap:10px;margin:10px 0;font-size:13px;font-weight:600;"><span style="color:var(--coral);">Orange ${s.orangeScore}</span><span style="color:var(--muted);font-weight:400;">&ndash;</span><span style="color:#0F6E56;">Green ${s.greenScore}</span></div>` : ''}
           <div class="past-detail-grid" style="margin-bottom:16px;">
             <div class="past-detail-stat"><div class="v" style="color:var(--green);">${s.present.length}</div><div class="l">Present</div></div>
             <div class="past-detail-stat"><div class="v" style="color:var(--amber);">${s.late.length}</div><div class="l">Late</div></div>
@@ -2130,21 +2123,21 @@
         </div>
         <div class="form-group">
           <label class="form-label">Time</label>
-          <input type="time" class="form-input" value="18:00">
+          <input type="time" class="form-input" id="new-session-time" value="18:00">
         </div>
       </div>
       <div class="form-group">
         <label class="form-label">Venue</label>
-        <input type="text" class="form-input" placeholder="e.g. Turf Ground 2">
+        <input type="text" class="form-input" id="new-session-venue" placeholder="e.g. Turf Ground 2">
       </div>
       <div class="form-group">
         <label class="form-label">Session theme (optional)</label>
-        <input type="text" class="form-input" placeholder="e.g. Set-piece defending">
+        <input type="text" class="form-input" id="new-session-theme" placeholder="e.g. Set-piece defending">
       </div>
     </div>
     <div class="modal-footer">
       <button class="btn" onclick="closeNewSessionModal()">Cancel</button>
-      <button class="btn btn-primary" onclick="closeNewSessionModal()">Create session</button>
+      <button class="btn btn-primary" onclick="submitNewSession()">Create session</button>
     </div>
   </div>
 </div>
@@ -2454,6 +2447,42 @@
   }
   function closeNewSessionModal() {
     document.getElementById('new-session-modal').classList.remove('open');
+  }
+
+  async function submitNewSession() {
+    const date = document.getElementById('new-session-date').value;
+    const time = document.getElementById('new-session-time').value;
+    const venue = document.getElementById('new-session-venue').value.trim();
+    const theme = document.getElementById('new-session-theme').value.trim();
+
+    if (!date) {
+      alert('Pick a date for the session.');
+      return;
+    }
+
+    if (typeof supabaseClient !== 'undefined') {
+      try {
+        const { error } = await supabaseClient.from('sessions').insert({
+          session_type: 'practice', session_date: date, title: 'Practice \u00B7 Regular',
+          venue: venue || 'Turf Ground 2', theme: theme || null, kickoff_time: time || null, status: 'scheduled'
+        });
+        if (error) throw error;
+      } catch (e) {
+        console.error('Failed to create session:', e);
+        alert('Could not save the session \u2014 check your connection and try again.');
+        return;
+      }
+    }
+
+    closeNewSessionModal();
+    if (typeof renderDashboardUpcomingEvents === 'function') renderDashboardUpcomingEvents();
+    if (typeof renderUpcomingSessionsList === 'function') renderUpcomingSessionsList();
+
+    const banner = document.createElement('div');
+    banner.style.cssText = 'position:fixed;top:24px;left:50%;transform:translateX(-50%);background:var(--green);color:#fff;padding:12px 20px;border-radius:10px;font-size:13px;font-weight:600;z-index:200;box-shadow:0 8px 24px rgba(0,0,0,0.2);';
+    banner.textContent = 'Session created.';
+    document.body.appendChild(banner);
+    setTimeout(() => banner.remove(), 3000);
   }
 
   function openNewMessageModal() {
@@ -3315,7 +3344,7 @@
 
       Promise.all([
         supabaseClient.from('fines').select('*'),
-        supabaseClient.from('attendance').select('*, sessions(session_date, title, venue)')
+        supabaseClient.from('attendance').select('*, sessions(session_date, title, venue, orange_score, green_score, session_type)')
       ]).then(([finesRes, attRes]) => {
         if (finesRes.error) { console.error('Failed to load fines:', finesRes.error); return; }
         (finesRes.data || []).forEach(f => {
@@ -3351,7 +3380,9 @@
                 bySessionDate[sessionDate] = {
                   title: (a.sessions && a.sessions.title) || 'Practice \u00B7 Regular',
                   meta: new Date(sessionDate).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' }) + ' \u00B7 8:00 \u2013 10:00 PM' + ((a.sessions && a.sessions.venue) ? ' \u00B7 ' + a.sessions.venue : ''),
-                  present: [], late: [], absent: []
+                  present: [], late: [], absent: [],
+                  orangeScore: a.sessions ? a.sessions.orange_score : null,
+                  greenScore: a.sessions ? a.sessions.green_score : null
                 };
               }
               const bucket = bySessionDate[sessionDate];
@@ -5570,6 +5601,11 @@
   }
 
   function updateGreetingPointsRank() {
+    const dateSubEl = document.getElementById('dashboard-date-sub');
+    if (dateSubEl) {
+      const todayLabel = new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
+      dateSubEl.textContent = todayLabel + ' \u00B7 here\u2019s what\u2019s happening with your squad';
+    }
     const self = playerData[currentLoggedInKey];
     const rankInfo = computeRank(currentLoggedInKey);
     const ptsEl = document.getElementById('greeting-points');
