@@ -805,7 +805,7 @@
         </div>
 
         <div class="card">
-          <div class="card-header"><div class="card-title">Session Rediness Check</div></div>
+          <div class="card-header"><div class="card-title">Pre-session check-in</div></div>
           <div style="font-size:11.5px;color:var(--coral);font-weight:600;margin-bottom:10px;" id="pre-checkin-session-date">Checking in for: &mdash;</div>
           <div id="pre-checkin-form">
             <div style="font-size:12.5px;color:var(--muted);margin-bottom:12px;">How are you feeling ahead of tonight's session?</div>
@@ -885,6 +885,13 @@
           <table>
             <tbody id="dashboard-recent-fines-body"></tbody>
           </table>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Opted out &middot; this session</div>
+          </div>
+          <div id="dashboard-opted-out-list"><div style="font-size:12.5px;color:var(--muted);padding:8px 0;">Loading&hellip;</div></div>
         </div>
 
         <div class="card">
@@ -2432,6 +2439,7 @@
     if (typeof showTeamFact === 'function') showTeamFact();
     if (typeof renderDefaulterList === 'function') renderDefaulterList();
     if (typeof renderDashboardRecentFines === 'function') renderDashboardRecentFines();
+    if (typeof renderDashboardOptedOut === 'function') renderDashboardOptedOut();
     if (typeof renderPendingConfirmationTile === 'function') renderPendingConfirmationTile();
     if (typeof renderRecentlySettled === 'function') renderRecentlySettled();
 
@@ -3409,6 +3417,7 @@
         if (typeof renderRecentlySettled === 'function') renderRecentlySettled();
         if (typeof renderDefaulterList === 'function') renderDefaulterList();
         if (typeof renderDashboardRecentFines === 'function') renderDashboardRecentFines();
+    if (typeof renderDashboardOptedOut === 'function') renderDashboardOptedOut();
         if (typeof renderTeamOverviewStats === 'function') renderTeamOverviewStats();
         if (typeof updateGreetingPointsRank === 'function') updateGreetingPointsRank();
         if (typeof updateAccountStatusTile === 'function') updateAccountStatusTile();
@@ -3452,6 +3461,7 @@
     if (typeof updateFinesTotals === 'function') updateFinesTotals();
     if (typeof renderScheduleAttendanceAndTurnout === 'function') renderScheduleAttendanceAndTurnout();
     if (typeof renderDashboardRecentFines === 'function') renderDashboardRecentFines();
+    if (typeof renderDashboardOptedOut === 'function') renderDashboardOptedOut();
     if (typeof renderPendingConfirmationTile === 'function') renderPendingConfirmationTile();
     if (typeof renderRecentlySettled === 'function') renderRecentlySettled();
     if (typeof updateAdminUIVisibility === 'function') updateAdminUIVisibility();
@@ -3823,6 +3833,7 @@
     if (typeof renderOutstandingFines === 'function') renderOutstandingFines();
     if (typeof updateFinesTotals === 'function') updateFinesTotals();
     if (typeof renderDashboardRecentFines === 'function') renderDashboardRecentFines();
+    if (typeof renderDashboardOptedOut === 'function') renderDashboardOptedOut();
     if (typeof renderPendingConfirmationTile === 'function') renderPendingConfirmationTile();
     if (typeof renderRecentlySettled === 'function') renderRecentlySettled();
     if (typeof renderAdminSquadGrid === 'function') renderAdminSquadGrid();
@@ -3954,6 +3965,7 @@
     if (typeof renderSquadDepth === 'function') renderSquadDepth();
     if (typeof renderTeamOverviewStats === 'function') renderTeamOverviewStats();
     if (typeof renderDashboardUpcomingEvents === 'function') renderDashboardUpcomingEvents();
+    if (typeof renderDashboardOptedOut === 'function') renderDashboardOptedOut();
     if (typeof renderDashboardTeamSplit === 'function') renderDashboardTeamSplit();
     if (typeof renderFocusSplitList === 'function') renderFocusSplitList();
   }
@@ -4630,7 +4642,8 @@
     let teamGoalsAsAttacker = 0, teamGoalsAsMid = 0, personalGoalsScored = 0;
     let gamesFailedToScore = 0, goalsConcededAsDef = 0, noCleanSheetGamesAsKeeper = 0;
     let cleanSheetGamesCount = 0, cleanSheetRole = null;
-    let winsCount = 0, lossesCount = 0, practiceGamesPlayedCount = 0;
+    let winsCount = 0, lossesCount = 0, drawsCount = 0, practiceGamesPlayedCount = 0;
+    let matchDrawsCount = 0;
 
     const matchSource = (typeof pastMatches !== 'undefined') ? pastMatches : {};
     Object.values(matchSource).forEach(m => {
@@ -4651,6 +4664,8 @@
         } else if (m.ourScore < m.theirScore) {
           matchLossPts -= 1;
           matchLossesCount += 1;
+        } else {
+          matchDrawsCount += 1;
         }
       });
       (m.scorers || []).forEach(([n, g]) => { if (n === name) { matchGoalPts += g * 10; matchGoalsCount += g; } });
@@ -5361,6 +5376,7 @@
     updateAccountStatusTile();
     if (typeof renderOutstandingFines === 'function') renderOutstandingFines();
     if (typeof renderDashboardRecentFines === 'function') renderDashboardRecentFines();
+    if (typeof renderDashboardOptedOut === 'function') renderDashboardOptedOut();
     if (typeof renderPendingConfirmationTile === 'function') renderPendingConfirmationTile();
     if (typeof renderRecentlySettled === 'function') renderRecentlySettled();
     if (typeof renderSquadPlayerGrid === 'function') renderSquadPlayerGrid();
@@ -5657,6 +5673,7 @@
   renderTeamOverviewStats();
   renderDefaulterList();
   renderDashboardRecentFines();
+  renderDashboardOptedOut();
   renderPendingConfirmationTile();
   renderRecentlySettled();
   renderUpcomingSessionsList();
@@ -5825,6 +5842,7 @@
     renderPendingConfirmationTile();
     renderRecentlySettled();
     if (typeof renderDashboardRecentFines === 'function') renderDashboardRecentFines();
+    if (typeof renderDashboardOptedOut === 'function') renderDashboardOptedOut();
     if (typeof renderPendingConfirmationTile === 'function') renderPendingConfirmationTile();
     if (typeof renderRecentlySettled === 'function') renderRecentlySettled();
     if (typeof renderAdminSquadGrid === 'function') renderAdminSquadGrid();
@@ -5919,6 +5937,7 @@
     updateFinesTotals();
     renderOutstandingFines();
     if (typeof renderDashboardRecentFines === 'function') renderDashboardRecentFines();
+    if (typeof renderDashboardOptedOut === 'function') renderDashboardOptedOut();
     if (typeof renderPendingConfirmationTile === 'function') renderPendingConfirmationTile();
     if (typeof renderRecentlySettled === 'function') renderRecentlySettled();
     updateAccountStatusTile();
@@ -6139,6 +6158,29 @@
     document.querySelectorAll('#focus-format-row .format-chip').forEach(chip => {
       chip.classList.toggle('active', currentSessionMeta.title === 'Practice \u00B7 ' + chip.textContent.trim());
     });
+  }
+
+  function renderDashboardOptedOut() {
+    const container = document.getElementById('dashboard-opted-out-list');
+    if (!container) return;
+
+    const reasonLabels = { leave: 'On leave', injury: 'Injured', 'not-available': 'Not available' };
+    const optedOut = squadOrder
+      .map(k => playerData[k])
+      .filter(p => p.available === false);
+
+    if (!optedOut.length) {
+      container.innerHTML = `<div style="font-size:12.5px;color:var(--muted);padding:8px 0;">Everyone's currently marked available for this session.</div>`;
+      return;
+    }
+
+    container.innerHTML = optedOut.map(p => `
+      <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--line);">
+        <div class="mini-avatar" style="background:${p.color};">${p.initials}</div>
+        <span>${p.name}</span>
+        <span style="margin-left:auto;font-size:11px;color:var(--red);">${reasonLabels[p.statusReason] || 'Not available'}</span>
+      </div>
+    `).join('');
   }
 
   function renderDashboardRecentFines() {
