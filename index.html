@@ -805,7 +805,7 @@
         </div>
 
         <div class="card">
-          <div class="card-header"><div class="card-title">Pre-session check-in</div></div>
+          <div class="card-header"><div class="card-title">Session readiness</div></div>
           <div style="font-size:11.5px;color:var(--coral);font-weight:600;margin-bottom:10px;" id="pre-checkin-session-date">Checking in for: &mdash;</div>
           <div id="pre-checkin-form">
             <div style="font-size:12.5px;color:var(--muted);margin-bottom:12px;">How are you feeling ahead of tonight's session?</div>
@@ -1765,7 +1765,7 @@
 
       <div>
         <div class="card">
-          <div class="card-header"><div class="card-title">Pre-session check-ins</div></div>
+          <div class="card-header"><div class="card-title">Session readiness &middot; team</div></div>
           <div class="feedback-row">
             <div class="feedback-left"><div class="mini-avatar" style="background:#D85A30;">AR</div>Arjun Rao</div>
             <span class="feedback-status status-fresh">Fresh</span>
@@ -2973,18 +2973,32 @@
       if (!sessions || !sessions.length) return;
 
       const sessionIds = sessions.map(s => s.id);
-      const [availRes, goalsRes] = await Promise.all([
+      const [availRes, goalsRes, attRes] = await Promise.all([
         supabaseClient.from('session_availability').select('*').in('session_id', sessionIds).eq('available', true),
-        supabaseClient.from('goals').select('*').in('session_id', sessionIds)
+        supabaseClient.from('goals').select('*').in('session_id', sessionIds),
+        supabaseClient.from('attendance').select('session_id, player_id, status').in('session_id', sessionIds)
       ]);
       if (availRes.error) throw availRes.error;
       if (goalsRes.error) throw goalsRes.error;
+      if (attRes.error) throw attRes.error;
 
       const supabaseIdToKey = {};
       squadOrder.forEach(k => { supabaseIdToKey[playerData[k].supabaseId] = k; });
 
+      const absentBySession = {};
+      (attRes.data || []).forEach(a => {
+        if (a.status === 'Absent') {
+          (absentBySession[a.session_id] = absentBySession[a.session_id] || new Set()).add(a.player_id);
+        }
+      });
+
       const availBySession = {};
       (availRes.data || []).forEach(a => {
+        // Selected/available doesn't count for scoring credit if they were actually marked
+        // absent/no-show on attendance \u2014 no team-goal bonus, clean sheet, or result credit
+        // for a session they didn't really attend.
+        const absentSet = absentBySession[a.session_id];
+        if (absentSet && absentSet.has(a.player_id)) return;
         (availBySession[a.session_id] = availBySession[a.session_id] || []).push(a);
       });
       const goalsBySession = {};
