@@ -791,6 +791,32 @@
         <div class="stat-label" id="account-status-label">Account status &middot; clear fines to reactivate</div>
       </div>
     </div>
+
+    <div class="card" style="margin-bottom:20px;" id="dashboard-checkin-card">
+      <div class="card-header">
+        <div class="card-title">Session availability</div>
+        <span style="font-size:11.5px;color:var(--muted);" id="dashboard-checkin-session-label"></span>
+      </div>
+      <div id="dashboard-checkin-content">
+        <div style="font-size:12.5px;color:var(--muted);margin-bottom:12px;">Will you be at the next session?</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="avail-btn" id="dash-avail-yes" onclick="dashboardMarkAvailable(true, 'available')" style="flex:1;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;"><path d="M20 6L9 17l-5-5"/></svg>
+            Available
+          </button>
+          <button class="avail-btn" id="dash-avail-late" onclick="dashboardMarkAvailable(false, 'informed-late')" style="flex:1;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+            Running late
+          </button>
+          <button class="avail-btn" id="dash-avail-no" onclick="dashboardMarkAvailable(false, 'not-available')" style="flex:1;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;"><path d="M18 6L6 18M6 6l12 12"/></svg>
+            Not available
+          </button>
+        </div>
+        <div id="dashboard-checkin-saved" style="display:none;font-size:12px;color:var(--green);margin-top:10px;font-weight:600;">&#10003; Saved</div>
+      </div>
+    </div>
+
     <div class="grid-2">
       <div>
         <div class="card">
@@ -889,13 +915,6 @@
 
         <div class="card">
           <div class="card-header">
-            <div class="card-title">Opted out &middot; this session</div>
-          </div>
-          <div id="dashboard-opted-out-list"><div style="font-size:12.5px;color:var(--muted);padding:8px 0;">Loading&hellip;</div></div>
-        </div>
-
-        <div class="card">
-          <div class="card-header">
             <div class="card-title">Upcoming event</div>
             <span class="card-link" onclick="showPage('schedule')">View schedule</span>
           </div>
@@ -934,6 +953,13 @@
           <div id="dash-teamB-visible"></div>
         </div>
       </div>
+    </div>
+
+    <div class="card" style="margin-top:20px;">
+      <div class="card-header">
+        <div class="card-title">Opted out &middot; this session</div>
+      </div>
+      <div id="dashboard-opted-out-list"><div style="font-size:12.5px;color:var(--muted);padding:8px 0;">Loading&hellip;</div></div>
     </div>
   </div>
 
@@ -3058,6 +3084,7 @@
       if (typeof renderMatchSeasonStats === 'function') renderMatchSeasonStats();
       if (typeof renderTeamOverviewStats === 'function') renderTeamOverviewStats();
       if (typeof renderDefaulterList === 'function') renderDefaulterList();
+      if (typeof updateGreetingPointsRank === 'function') updateGreetingPointsRank();
     } catch (e) {
       console.error('loadHistoricalMatchDataFromSupabase failed:', e);
     }
@@ -3154,6 +3181,7 @@
     if (typeof renderDefaulterList === 'function') renderDefaulterList();
     if (typeof renderTodaysTeamCheckins === 'function') renderTodaysTeamCheckins();
     if (typeof renderPersonalStatusFromReal === 'function') renderPersonalStatusFromReal();
+    if (typeof renderDashboardCheckin === 'function') renderDashboardCheckin();
       }
     } catch (e) {
       console.error('loadSessionAvailabilityFromSupabase failed:', e);
@@ -3369,14 +3397,22 @@
         supabaseClient.from('attendance').select('*, sessions(session_date, title, venue, orange_score, green_score, session_type)')
       ]).then(([finesRes, attRes]) => {
         if (finesRes.error) { console.error('Failed to load fines:', finesRes.error); return; }
+        let _redeem = 0, _payment = 0;
         (finesRes.data || []).forEach(f => {
           const key = supabaseIdToKey[f.player_id];
           if (!key) return;
           playerData[key].fines.push({
             dbId: f.id, reason: f.reason, date: f.created_at ? new Date(f.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) : '',
-            amount: f.amount, status: f.status, remaining: f.remaining != null ? f.remaining : f.amount
+            amount: f.amount, status: f.status, remaining: f.remaining != null ? f.remaining : f.amount,
+            clearedBy: f.cleared_by || null
           });
+          if (f.status === 'paid') {
+            if (f.cleared_by === 'redeem') _redeem += f.amount;
+            else if (f.cleared_by === 'payment') _payment += f.amount;
+          }
         });
+        clearedViaRedeem = _redeem;
+        clearedViaPayment = _payment;
         squadOrder.forEach(k => {
           const p = playerData[k];
           p.owed = p.fines.reduce((sum, f) => sum + (f.status !== 'paid' ? (f.remaining != null ? f.remaining : f.amount) : 0), 0);
@@ -5373,7 +5409,7 @@
     if (p.supabaseId && typeof supabaseClient !== 'undefined') {
       const dbWrites = touchedFines
         .filter(f => f.dbId)
-        .map(f => supabaseClient.from('fines').update({ status: f.status, remaining: f.remaining }).eq('id', f.dbId));
+        .map(f => supabaseClient.from('fines').update({ status: f.status, remaining: f.remaining, cleared_by: f.status === 'paid' ? 'redeem' : null }).eq('id', f.dbId));
       dbWrites.push(supabaseClient.from('players').update({ points: 0, points_redeemed: p.pointsRedeemed }).eq('id', p.supabaseId));
       try {
         const results = await Promise.all(dbWrites);
@@ -5653,7 +5689,10 @@
       const timeGreeting = hour < 12 ? 'Good morning' : (hour < 17 ? 'Good afternoon' : 'Good evening');
       titleEl.textContent = timeGreeting + ', ' + self.name.split(' ')[0] + '!';
     }
-    if (ptsEl) ptsEl.textContent = self.points;
+    if (ptsEl) {
+      const earnedTotal = (typeof computeEarnedPoints === 'function') ? computeEarnedPoints(self).total : self.points;
+      ptsEl.textContent = Math.max(0, earnedTotal - (self.pointsRedeemed || 0));
+    }
     if (rankEl) rankEl.textContent = '#' + rankInfo.rank;
 
     const pendingFineEl = document.getElementById('your-pending-fine-value');
@@ -5688,6 +5727,7 @@
   renderDefaulterList();
   renderDashboardRecentFines();
   renderDashboardOptedOut();
+  renderDashboardCheckin();
   renderPendingConfirmationTile();
   renderRecentlySettled();
   renderUpcomingSessionsList();
@@ -5935,7 +5975,7 @@
     if (typeof supabaseClient !== 'undefined') {
       const dbWrites = touchedFines
         .filter(f => f.dbId)
-        .map(f => supabaseClient.from('fines').update({ status: 'paid', remaining: 0 }).eq('id', f.dbId));
+        .map(f => supabaseClient.from('fines').update({ status: 'paid', remaining: 0, cleared_by: 'payment' }).eq('id', f.dbId));
       if (dbWrites.length) {
         try {
           const results = await Promise.all(dbWrites);
@@ -6174,6 +6214,68 @@
     });
   }
 
+  function renderDashboardCheckin() {
+    const card = document.getElementById('dashboard-checkin-card');
+    const labelEl = document.getElementById('dashboard-checkin-session-label');
+    if (!card) return;
+
+    const nextDate = typeof getNextSessionDate === 'function' ? getNextSessionDate() : null;
+    if (labelEl && nextDate) {
+      labelEl.textContent = nextDate.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
+    }
+
+    const locked = typeof isAvailabilityLockActive === 'function' && isAvailabilityLockActive();
+    const p = playerData[currentLoggedInKey];
+    const reason = p ? p.statusReason : null;
+
+    ['dash-avail-yes', 'dash-avail-late', 'dash-avail-no'].forEach(id => {
+      const btn = document.getElementById(id);
+      if (btn) {
+        btn.classList.remove('selected-yes', 'selected-no');
+        btn.disabled = locked;
+        btn.style.opacity = locked ? '0.5' : '1';
+        btn.style.cursor = locked ? 'not-allowed' : 'pointer';
+      }
+    });
+
+    if (reason === 'available') {
+      const btn = document.getElementById('dash-avail-yes');
+      if (btn) btn.classList.add('selected-yes');
+    } else if (reason === 'informed-late') {
+      const btn = document.getElementById('dash-avail-late');
+      if (btn) btn.classList.add('selected-yes');
+    } else if (reason === 'not-available' || (p && p.available === false && reason)) {
+      const btn = document.getElementById('dash-avail-no');
+      if (btn) btn.classList.add('selected-no');
+    }
+
+    const savedEl = document.getElementById('dashboard-checkin-saved');
+    if (savedEl) savedEl.style.display = 'none';
+  }
+
+  async function dashboardMarkAvailable(isAvailable, reason) {
+    const p = playerData[currentLoggedInKey];
+    if (!p) return;
+
+    p.available = isAvailable;
+    p.statusReason = reason;
+
+    renderDashboardCheckin();
+    const savedEl = document.getElementById('dashboard-checkin-saved');
+    if (savedEl) savedEl.style.display = 'block';
+
+    if (typeof persistAvailability === 'function') persistAvailability(currentLoggedInKey, reason);
+    if (typeof updatePersonalStatusTile === 'function') {
+      const label = reason === 'informed-late' ? 'Informed late' : (isAvailable ? 'Available' : 'Not available');
+      updatePersonalStatusTile(label, !isAvailable);
+    }
+    if (typeof renderPersonalStatusFromReal === 'function') renderPersonalStatusFromReal();
+    if (typeof renderScheduleAttendanceAndTurnout === 'function') renderScheduleAttendanceAndTurnout();
+    if (typeof renderSquadDepth === 'function') renderSquadDepth();
+    if (typeof renderTeamOverviewStats === 'function') renderTeamOverviewStats();
+    if (typeof renderDashboardOptedOut === 'function') renderDashboardOptedOut();
+  }
+
   function renderDashboardOptedOut() {
     const container = document.getElementById('dashboard-opted-out-list');
     if (!container) return;
@@ -6181,7 +6283,7 @@
     const reasonLabels = { leave: 'On leave', injury: 'Injured', 'not-available': 'Not available' };
     const optedOut = squadOrder
       .map(k => playerData[k])
-      .filter(p => p.available === false);
+      .filter(p => p.available === false && p.statusReason && p.statusReason !== 'available' && p.statusReason !== 'informed-late');
 
     if (!optedOut.length) {
       container.innerHTML = `<div style="font-size:12.5px;color:var(--muted);padding:8px 0;">Everyone's currently marked available for this session.</div>`;
