@@ -3520,6 +3520,7 @@
     // its focus plan + availability from Supabase so this device matches everyone else's.
     if (typeof ensureCurrentSession === 'function') {
       ensureCurrentSession().then(() => {
+        if (typeof startAvailabilityRealtime === 'function') startAvailabilityRealtime();
         if (typeof renderAttendanceManager === 'function') renderAttendanceManager();
         if (typeof renderSquadDepth === 'function') renderSquadDepth();
     if (typeof renderTeamOverviewStats === 'function') renderTeamOverviewStats();
@@ -3536,6 +3537,26 @@
 
   function isCurrentUserAdmin() {
     return !!(playerData[currentLoggedInKey] && playerData[currentLoggedInKey].isAdmin);
+  }
+
+  function startAvailabilityRealtime() {
+    if (typeof supabaseClient === 'undefined' || !currentSessionId) return;
+    supabaseClient.channel('availability-live')
+      .on('postgres_changes', {
+        event: '*', schema: 'public', table: 'session_availability',
+        filter: 'session_id=eq.' + currentSessionId
+      }, payload => {
+        const key = Object.keys(playerData).find(k => playerData[k].supabaseId === payload.new?.player_id || playerData[k].supabaseId === payload.old?.player_id);
+        if (key && payload.new) {
+          playerData[key].available = payload.new.available;
+          if (payload.new.reason) playerData[key].statusReason = payload.new.reason;
+        }
+        if (typeof renderTeamOverviewStats === 'function') renderTeamOverviewStats();
+        if (typeof renderDashboardTeamSplit === 'function') renderDashboardTeamSplit();
+        if (typeof renderDashboardOptedOut === 'function') renderDashboardOptedOut();
+        if (typeof renderScheduleAttendanceAndTurnout === 'function') renderScheduleAttendanceAndTurnout();
+      })
+      .subscribe();
   }
 
   function updateAdminUIVisibility() {
@@ -6109,14 +6130,28 @@
   }
 
   function autoAssignTeams() {
-    // Sort by attendance descending, then snake-assign so both bibs end up balanced
-    // by attendance rather than just alphabetically or by position. Only runs across
-    // players currently marked available for this session.
+    // Position-balanced auto-split: group by position, then snake-assign within
+    // each group so both teams get a roughly equal share of each position type.
+    // Within each position group players are sorted by attendance descending so
+    // the stronger players are distributed evenly too.
+    const posOrder = ['Goalkeeper', 'Defender', 'Midfielder', 'Forward'];
     const available = getAvailableSquad();
-    const sorted = [...available].sort((a, b) => b.attendance - a.attendance);
-    sorted.forEach((p, i) => {
-      playerData[p.key].team = (i % 2 === 0) ? 'A' : 'B';
+
+    const byPos = {};
+    posOrder.forEach(pos => { byPos[pos] = []; });
+    available.forEach(p => {
+      const pos = playerData[p.key].pos || 'Midfielder';
+      const bucket = byPos[pos] || byPos['Midfielder'];
+      bucket.push(p);
     });
+
+    posOrder.forEach(pos => {
+      byPos[pos].sort((a, b) => (parseInt(playerData[b.key].attendance) || 0) - (parseInt(playerData[a.key].attendance) || 0));
+      byPos[pos].forEach((p, i) => {
+        playerData[p.key].team = (i % 2 === 0) ? 'A' : 'B';
+      });
+    });
+
     renderFocusSplitList();
   }
 
@@ -6274,6 +6309,7 @@
     if (typeof renderSquadDepth === 'function') renderSquadDepth();
     if (typeof renderTeamOverviewStats === 'function') renderTeamOverviewStats();
     if (typeof renderDashboardOptedOut === 'function') renderDashboardOptedOut();
+    if (typeof renderDashboardTeamSplit === 'function') renderDashboardTeamSplit();
   }
 
   function renderDashboardOptedOut() {
@@ -6749,7 +6785,7 @@
     if (bCount) bCount.textContent = teamB.length + ' players';
 
     const subtitleEl = document.getElementById('team-split-subtitle');
-    if (subtitleEl) subtitleEl.textContent = 'Auto-picked from ' + (teamA.length + teamB.length) + ' available players \u00B7 balanced by attendance';
+    if (subtitleEl) subtitleEl.textContent = 'Auto-picked from ' + (teamA.length + teamB.length) + ' available players \u00B7 balanced by position';
 
     if (typeof renderTodaysTeamCheckins === 'function') renderTodaysTeamCheckins();
   }
