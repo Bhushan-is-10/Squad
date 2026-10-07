@@ -2439,7 +2439,7 @@
       fines: [],
       attendanceHistory: [],
       available: false, // doesn't appear in the practice split pool until marked available for a session
-      team: 'A'
+      team: null
     };
 
     squadOrder.push(key);
@@ -3170,7 +3170,7 @@
           if (key) {
             playerData[key].available = row.available;
             playerData[key].statusReason = row.reason || (row.available ? 'available' : 'not-available');
-            if (row.team) playerData[key].team = row.team;
+            if (row.team) playerData[key].team = row.team || null;
             if (row.checkin_feeling) playerData[key].todayCheckinFeeling = row.checkin_feeling;
           }
         });
@@ -3375,7 +3375,7 @@
         fines: [],
         attendanceHistory: [],
         available: false,
-        team: 'A',
+        team: null,
         isAdmin: !!row.is_admin
       };
       squadOrder.push(key);
@@ -3476,6 +3476,7 @@
         if (typeof renderSquadPlayerGrid === 'function') renderSquadPlayerGrid();
 
         if (typeof loadHistoricalMatchDataFromSupabase === 'function') loadHistoricalMatchDataFromSupabase();
+          if (typeof renderAnalyticsPage === 'function' && document.getElementById('page-analytics)?.classList.contains('active')) renderAnalyticsPage();
 
         // Auto-show the most recent real past session, instead of leaving the date picker blank.
         if (typeof pastSessions !== 'undefined') {
@@ -3605,7 +3606,7 @@
       .filter(key => playerData[key].available)
       .map(key => {
         const p = playerData[key];
-        return { key, name: p.name, initials: p.initials, color: p.color, pos: posAbbrev(p.pos), team: p.team || 'A', attendance: parseInt(p.attendance) || 0 };
+        return { key, name: p.name, initials: p.initials, color: p.color, pos: posAbbrev(p.pos), team: p.team || null, attendance: parseInt(p.attendance) || 0 };
       });
   }
 
@@ -5380,9 +5381,10 @@
   function redeemPoints() {
     const p = playerData[currentProfileId];
     if (!p || p.owed <= 0 || p.points <= 0) return;
-
+    const pointsNeeded = Math.min(p.points, p.owed);
+    const pointsAfter = p.points - pointsNeeded;
     document.getElementById('redeem-confirm-message').textContent =
-      'Redeem ' + p.points + ' points against your \u20B9' + p.owed + ' outstanding fine?';
+      'Redeem ' pointsNeeeded + ' points against your \u20B9' + p.owed + ' outstanding fine?';
     document.getElementById('redeem-confirm-modal').classList.add('open');
   }
 
