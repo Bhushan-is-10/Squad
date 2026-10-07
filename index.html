@@ -5460,7 +5460,7 @@
   function showRedeemSuccessMessage(pointsToUse, applied, remaining) {
     const banner = document.createElement('div');
     banner.style.cssText = 'position:fixed;top:24px;left:50%;transform:translateX(-50%);background:var(--green);color:#fff;padding:12px 20px;border-radius:10px;font-size:13px;font-weight:600;z-index:200;box-shadow:0 8px 24px rgba(0,0,0,0.2);';
-    banner.textContent = 'Redeemed ' + pointsToUse + ' points \u00B7 \u20B9' + applied + ' cleared \u00B7 \u20B9' + remaining + ' remaining ' + (p.points > 0 ? ' . ' + p.points + ' pts left' : ' . points reset to 0';
+    banner.textContent = 'Redeemed ' + pointsToUse + ' points \u00B7 \u20B9' + applied + ' cleared \u00B7 \u20B9' + remaining + ' remaining ' + (p.points > 0 ? ' \u00B7 ' + p.points + ' pts left' : ' \u00B7 points reset to 0');
     document.body.appendChild(banner);
     setTimeout(() => banner.remove(), 3500);
   }
