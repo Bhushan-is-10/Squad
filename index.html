@@ -3476,7 +3476,7 @@
         if (typeof renderSquadPlayerGrid === 'function') renderSquadPlayerGrid();
 
         if (typeof loadHistoricalMatchDataFromSupabase === 'function') loadHistoricalMatchDataFromSupabase();
-          if (typeof renderAnalyticsPage === 'function' && document.getElementById('page-analytics)?.classList.contains('active')) renderAnalyticsPage();
+          if (typeof renderAnalyticsPage === 'function' && document.getElementById('page-analytics')?.classList.contains('active')) renderAnalyticsPage();
 
         // Auto-show the most recent real past session, instead of leaving the date picker blank.
         if (typeof pastSessions !== 'undefined') {
