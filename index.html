@@ -3085,6 +3085,7 @@
       if (typeof renderTeamOverviewStats === 'function') renderTeamOverviewStats();
       if (typeof renderDefaulterList === 'function') renderDefaulterList();
       if (typeof updateGreetingPointsRank === 'function') updateGreetingPointsRank();
+      if (typeof renderAnalyticsPage === 'function' && document.getElementById('page-analytics')?.classList.contains('active')) renderAnalyticsPage();
     } catch (e) {
       console.error('loadHistoricalMatchDataFromSupabase failed:', e);
     }
@@ -3476,7 +3477,7 @@
         if (typeof renderSquadPlayerGrid === 'function') renderSquadPlayerGrid();
 
         if (typeof loadHistoricalMatchDataFromSupabase === 'function') loadHistoricalMatchDataFromSupabase();
-          if (typeof renderAnalyticsPage === 'function' && document.getElementById('page-analytics')?.classList.contains('active')) renderAnalyticsPage();
+        if (typeof renderAnalyticsPage === 'function' && document.getElementById('page-analytics')?.classList.contains('active')) renderAnalyticsPage();
 
         // Auto-show the most recent real past session, instead of leaving the date picker blank.
         if (typeof pastSessions !== 'undefined') {
@@ -5381,10 +5382,15 @@
   function redeemPoints() {
     const p = playerData[currentProfileId];
     if (!p || p.owed <= 0 || p.points <= 0) return;
+
     const pointsNeeded = Math.min(p.points, p.owed);
     const pointsAfter = p.points - pointsNeeded;
     document.getElementById('redeem-confirm-message').textContent =
-      'Redeem ' pointsNeeded + ' points against your \u20B9' + p.owed + ' outstanding fine?';
+      'Redeem ' + pointsNeeded + ' points against your \u20B9' + p.owed + ' outstanding fine?';
+    const noteEl = document.querySelector('#redeem-confirm-modal .modal-body [style*="6b5a3d"]');
+    if (noteEl) noteEl.innerHTML = pointsAfter > 0
+      ? 'Your points balance will drop from <strong>' + p.points + '</strong> to <strong>' + pointsAfter + '</strong> after this. This cannot be undone.'
+      : 'Your points balance will reset to <strong>0</strong> after this. This cannot be undone.';
     document.getElementById('redeem-confirm-modal').classList.add('open');
   }
 
@@ -5396,13 +5402,13 @@
     const p = playerData[currentProfileId];
     if (!p || p.owed <= 0 || p.points <= 0) { closeRedeemConfirmModal(); return; }
 
-    const pointsToUse = p.points;
-
-    // Close fine events oldest-first with the available points, so the fine collector
-    // doesn't need to manually adjust anything \u2014 only a full cash settlement needs their action.
-    let pool = pointsToUse;
+    // Only spend the points actually needed to clear the outstanding fines,
+    // not the entire balance. Leftover points stay with the player.
     const owedBefore = p.owed;
+    let pool = Math.min(p.points, owedBefore); // spend at most what's owed
+    const pointsToUse = pool;
     const touchedFines = [];
+
     for (const f of p.fines) {
       if (pool <= 0) break;
       if (f.status === 'paid') continue;
@@ -5421,7 +5427,7 @@
     recomputeOwed(p);
     const applied = owedBefore - p.owed;
     p.pointsRedeemed += pointsToUse;
-    p.points = Math.max(0, p.points - pointsToUse);
+    p.points = Math.max(0, p.points - pointsToUse); // only deduct what was used
 
     if (applied > 0) {
       clearedViaRedeem += applied;
@@ -5460,7 +5466,7 @@
   function showRedeemSuccessMessage(pointsToUse, applied, remaining) {
     const banner = document.createElement('div');
     banner.style.cssText = 'position:fixed;top:24px;left:50%;transform:translateX(-50%);background:var(--green);color:#fff;padding:12px 20px;border-radius:10px;font-size:13px;font-weight:600;z-index:200;box-shadow:0 8px 24px rgba(0,0,0,0.2);';
-    banner.textContent = 'Redeemed ' + pointsToUse + ' points \u00B7 \u20B9' + applied + ' cleared \u00B7 \u20B9' + remaining + ' remaining ' + (p.points > 0 ? ' \u00B7 ' + p.points + ' pts left' : ' \u00B7 points reset to 0');
+    banner.textContent = 'Redeemed ' + pointsToUse + ' points \u00B7 \u20B9' + applied + ' cleared \u00B7 \u20B9' + remaining + ' remaining' + (p.points > 0 ? ' \u00B7 ' + p.points + ' pts left' : ' \u00B7 points reset to 0');
     document.body.appendChild(banner);
     setTimeout(() => banner.remove(), 3500);
   }
@@ -6560,6 +6566,50 @@
   }
 
   function renderAnalyticsPage() {
+    // Attendance trend — last 6 sessions from real pastSessions data
+    const attTrend = document.getElementById('analytics-attendance-trend');
+    if (attTrend) {
+      const sessionDates = Object.keys(pastSessions).sort().slice(-6);
+      if (sessionDates.length) {
+        const totalPlayers = squadOrder.length || 1;
+        const maxPct = 100;
+        attTrend.innerHTML = sessionDates.map(d => {
+          const s = pastSessions[d];
+          const present = (s.present || []).length + (s.late || []).length;
+          const pct = Math.round((present / totalPlayers) * 100);
+          const label = new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+          return `<div class="bar-row"><span class="bar-label">${label}</span><div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:var(--blue);"></div></div><span class="bar-value">${pct}%</span></div>`;
+        }).join('');
+      } else {
+        attTrend.innerHTML = '<div style="font-size:12.5px;color:var(--muted);padding:8px 0;">No session history recorded yet.</div>';
+      }
+    }
+
+    // Fine trend — monthly totals from real loaded fines
+    const fineTrend = document.getElementById('analytics-fine-trend');
+    if (fineTrend) {
+      const monthlyFines = {};
+      Object.values(playerData).forEach(p => {
+        (p.fines || []).forEach(f => {
+          if (!f.date) return;
+          const parts = f.date.split(' ');
+          const key = parts.length >= 2 ? parts[1] + ' ' + (new Date().getFullYear()) : f.date;
+          monthlyFines[key] = (monthlyFines[key] || 0) + f.amount;
+        });
+      });
+      const months = Object.keys(monthlyFines).sort();
+      if (months.length) {
+        const maxFine = Math.max(...Object.values(monthlyFines)) || 1;
+        fineTrend.innerHTML = months.slice(-6).map(m => {
+          const amt = monthlyFines[m];
+          const pct = Math.round((amt / maxFine) * 100);
+          return `<div class="bar-row"><span class="bar-label">${m}</span><div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:var(--red);"></div></div><span class="bar-value">&#8377;${amt}</span></div>`;
+        }).join('');
+      } else {
+        fineTrend.innerHTML = '<div style="font-size:12.5px;color:var(--muted);padding:8px 0;">No fine history recorded yet.</div>';
+      }
+    }
+
     const riskSub = document.getElementById('analytics-risk-sub');
     if (riskSub) {
       const nextDate = (typeof getNextSessionDate === 'function') ? getNextSessionDate() : new Date();
@@ -6771,8 +6821,9 @@
   }
 
   function renderDashboardTeamSplit() {
-    const teamA = getAvailableSquad().filter(p => p.team === 'A');
-    const teamB = getAvailableSquad().filter(p => p.team === 'B');
+    const available = getAvailableSquad();
+    const teamA = available.filter(p => p.team === 'A');
+    const teamB = available.filter(p => p.team === 'B');
 
     const slotHtml = p => `<div class="team-split-slot" data-player="${p.name}"><span class="team-split-pos">${p.pos}</span><div class="mini-avatar" style="background:${p.color};">${p.initials}</div><span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${p.name}</span><span class="checkin-badge"></span></div>`;
 
