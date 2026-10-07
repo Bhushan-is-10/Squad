@@ -5384,7 +5384,7 @@
     const pointsNeeded = Math.min(p.points, p.owed);
     const pointsAfter = p.points - pointsNeeded;
     document.getElementById('redeem-confirm-message').textContent =
-      'Redeem ' pointsNeeeded + ' points against your \u20B9' + p.owed + ' outstanding fine?';
+      'Redeem ' pointsNeeded + ' points against your \u20B9' + p.owed + ' outstanding fine?';
     document.getElementById('redeem-confirm-modal').classList.add('open');
   }
 
