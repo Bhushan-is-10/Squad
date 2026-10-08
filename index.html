@@ -6822,6 +6822,19 @@
 
   function renderDashboardTeamSplit() {
     const available = getAvailableSquad();
+
+    const unassigned = available.filter(p => p.team !== 'A' && p.team !== 'B');
+    if(unassigned.length) {
+     let aCount = available.filter(p => p.team === 'A').lenght;
+     let bCount = available.filter(p => p.team === 'B').lenght;
+     unassigned.forEach(p =>{
+      const team = aCount <= bCount ? 'A' : 'B';
+      playerData[p.key].team = team;
+      p.team = team
+      if (team === 'A') aCount++; else bCount++;
+     });
+    }
+   
     const teamA = available.filter(p => p.team === 'A');
     const teamB = available.filter(p => p.team === 'B');
 
